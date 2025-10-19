@@ -25,6 +25,8 @@ mixin _$UserModel {
   String get phoneno => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
+  String get region => throw _privateConstructorUsedError;
+  String get city => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   int? get version => throw _privateConstructorUsedError;
 
@@ -49,6 +51,8 @@ abstract class $UserModelCopyWith<$Res> {
       String phoneno,
       String role,
       String password,
+      String region,
+      String city,
       DateTime? createdAt,
       int? version});
 }
@@ -73,6 +77,8 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? phoneno = null,
     Object? role = null,
     Object? password = null,
+    Object? region = null,
+    Object? city = null,
     Object? createdAt = freezed,
     Object? version = freezed,
   }) {
@@ -96,6 +102,14 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
       password: null == password
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
+              as String,
+      region: null == region
+          ? _value.region
+          : region // ignore: cast_nullable_to_non_nullable
+              as String,
+      city: null == city
+          ? _value.city
+          : city // ignore: cast_nullable_to_non_nullable
               as String,
       createdAt: freezed == createdAt
           ? _value.createdAt
@@ -123,6 +137,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String phoneno,
       String role,
       String password,
+      String region,
+      String city,
       DateTime? createdAt,
       int? version});
 }
@@ -145,6 +161,8 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? phoneno = null,
     Object? role = null,
     Object? password = null,
+    Object? region = null,
+    Object? city = null,
     Object? createdAt = freezed,
     Object? version = freezed,
   }) {
@@ -169,6 +187,14 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
               as String,
+      region: null == region
+          ? _value.region
+          : region // ignore: cast_nullable_to_non_nullable
+              as String,
+      city: null == city
+          ? _value.city
+          : city // ignore: cast_nullable_to_non_nullable
+              as String,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -190,6 +216,8 @@ class _$UserModelImpl implements _UserModel {
       this.phoneno = "",
       this.role = "",
       this.password = "",
+      this.region = "",
+      this.city = "",
       this.createdAt,
       this.version});
 
@@ -212,13 +240,19 @@ class _$UserModelImpl implements _UserModel {
   @JsonKey()
   final String password;
   @override
+  @JsonKey()
+  final String region;
+  @override
+  @JsonKey()
+  final String city;
+  @override
   final DateTime? createdAt;
   @override
   final int? version;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, username: $username, phoneno: $phoneno, role: $role, password: $password, createdAt: $createdAt, version: $version)';
+    return 'UserModel(id: $id, username: $username, phoneno: $phoneno, role: $role, password: $password, region: $region, city: $city, createdAt: $createdAt, version: $version)';
   }
 
   @override
@@ -233,6 +267,8 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.role, role) || other.role == role) &&
             (identical(other.password, password) ||
                 other.password == password) &&
+            (identical(other.region, region) || other.region == region) &&
+            (identical(other.city, city) || other.city == city) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.version, version) || other.version == version));
@@ -240,8 +276,8 @@ class _$UserModelImpl implements _UserModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, username, phoneno, role, password, createdAt, version);
+  int get hashCode => Object.hash(runtimeType, id, username, phoneno, role,
+      password, region, city, createdAt, version);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -266,6 +302,8 @@ abstract class _UserModel implements UserModel {
       final String phoneno,
       final String role,
       final String password,
+      final String region,
+      final String city,
       final DateTime? createdAt,
       final int? version}) = _$UserModelImpl;
 
@@ -282,6 +320,10 @@ abstract class _UserModel implements UserModel {
   String get role;
   @override
   String get password;
+  @override
+  String get region;
+  @override
+  String get city;
   @override
   DateTime? get createdAt;
   @override

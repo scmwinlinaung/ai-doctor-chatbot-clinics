@@ -1,13 +1,14 @@
 import 'dart:io';
 
+import 'package:clinics/features/booking/cubit/booking_cubit.dart';
+import 'package:clinics/features/home/cubit/city_cubit.dart';
+import 'package:clinics/features/home/cubit/language_cubit.dart';
+import 'package:clinics/features/home/cubit/region_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:clinics/core/di/injection.dart';
 import 'package:clinics/core/navigation/app_router.dart';
-import 'package:clinics/features/booking/cubit/city_cubit.dart';
-import 'package:clinics/features/booking/cubit/region_cubit.dart';
-import 'package:clinics/features/chatbot/cubit/language_cubit.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 import 'package:clinics/features/auth/cubit/user_cubit.dart';
 import 'package:clinics/features/auth/cubit/auth_cubit.dart';
@@ -36,6 +37,7 @@ class HealthGuideApp extends StatelessWidget {
         BlocProvider(create: (context) => getIt<LanguageCubit>()),
         BlocProvider(create: (context) => getIt<ThemeCubit>()),
         BlocProvider(create: (context) => getIt<UserCubit>()),
+        BlocProvider(create: (context) => getIt<BookingCubit>()),
         BlocProvider(
           create: (context) => getIt<AuthCubit>()..checkAuthStatus(),
         ),

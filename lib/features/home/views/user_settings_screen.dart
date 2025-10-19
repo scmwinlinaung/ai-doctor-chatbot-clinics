@@ -1,3 +1,4 @@
+import 'package:clinics/features/home/cubit/language_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -8,7 +9,6 @@ import 'package:clinics/core/widgets/loading_overlay.dart';
 import 'package:clinics/features/auth/cubit/auth_cubit.dart';
 import 'package:clinics/features/auth/cubit/user_cubit.dart';
 import 'package:clinics/features/auth/services/token_storage_service.dart';
-import 'package:clinics/features/chatbot/cubit/language_cubit.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 
 class UserSettingsScreen extends StatefulWidget {
@@ -192,8 +192,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                       ElevatedButton(
                         onPressed: () {
                           context.read<UserCubit>().fetchUser(
-                            '68d017f2239675addec4af93',
-                          );
+                                '68d017f2239675addec4af93',
+                              );
                         },
                         child: const Text('Retry'),
                       ),
@@ -511,9 +511,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).primaryColor
-              : Colors.transparent,
+          color:
+              isSelected ? Theme.of(context).primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
             color: isSelected

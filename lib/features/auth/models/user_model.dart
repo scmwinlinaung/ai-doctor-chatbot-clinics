@@ -11,6 +11,8 @@ class UserModel with _$UserModel {
     @Default("") String phoneno,
     @Default("") String role,
     @Default("") String password,
+    @Default("") String region,
+    @Default("") String city,
     DateTime? createdAt,
     int? version,
   }) = _UserModel;

@@ -17,11 +17,9 @@ class UserCubit extends Cubit<UserState> {
   Future<void> fetchUser(String userId) async {
     try {
       emit(const UserState.loading());
-      print("userId = $userId");
       final response = await _dio.get('/users/$userId');
 
       if (response.statusCode == 200) {
-        print("USER = " + {response.data}.toString());
         final user = UserModel.fromJson(response.data);
 
         emit(UserState.loaded(user));

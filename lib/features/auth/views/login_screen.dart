@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Login to your health guide account.',
+                          'Login to your clinics account.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16, color: Colors.white70),
                         ),
@@ -176,9 +176,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   : () {
                                       if (_formKey.currentState!.validate()) {
                                         context.read<AuthCubit>().login(
-                                          usernameOrPhonenoCtrl.text,
-                                          passwordCtrl.text,
-                                        );
+                                              usernameOrPhonenoCtrl.text,
+                                              passwordCtrl.text,
+                                            );
                                       }
                                     },
                               child: Text(
@@ -187,26 +187,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Don't have an account? ",
-                              style: TextStyle(color: Colors.grey[400]),
-                            ),
-                            TextButton(
-                              onPressed: () => context.go(AppRoutes.signup),
-                              child: Text(
-                                'Sign Up',
-                                style: TextStyle(
-                                  color: theme.primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),

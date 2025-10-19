@@ -74,23 +74,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             Expanded(
                               child: _buildCategoryCard(
                                 context,
-                                icon: Icons.grid_view_rounded,
-                                label: 'Questions And\nAnswers',
-                                color: Theme.of(context).primaryColor,
-                                onTap: () {
-                                  context.push(AppRoutes.category);
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildCategoryCard(
-                                context,
                                 icon: Icons.calendar_month_outlined,
-                                label: 'Book\nAppointment',
+                                label: 'All Clinics Booking',
                                 color: Theme.of(context).primaryColor,
                                 onTap: () {
-                                  context.push(AppRoutes.clinics);
+                                  context.push(AppRoutes.bookingListing);
                                 },
                               ),
                             ),
@@ -164,11 +152,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4.0),
-                  color:
-                      (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(_currentAd == entry.key ? 0.9 : 0.4),
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                      .withOpacity(_currentAd == entry.key ? 0.9 : 0.4),
                 ),
               ),
             );
@@ -280,13 +267,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4.0),
-                        color:
-                            (Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black)
-                                .withOpacity(
-                                  _currentAd == entry.key ? 0.9 : 0.4,
-                                ),
+                        color: (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withOpacity(
+                          _currentAd == entry.key ? 0.9 : 0.4,
+                        ),
                       ),
                     ),
                   );

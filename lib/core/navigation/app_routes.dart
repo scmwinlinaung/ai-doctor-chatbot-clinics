@@ -10,6 +10,7 @@ class AppRoutes {
   static const String questions = '/questions';
   static const String clinics = '/clinics';
   static const String clinicsDetail = '/clinics-detail';
+  static const String bookingListing = '/booking-listing';
   static const String home = '/';
   static const String forgetPassword = '/forget-password';
 }
