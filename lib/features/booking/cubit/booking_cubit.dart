@@ -52,12 +52,12 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
-  Future<void> confirmBooking(String bookingId) async {
-    print("CONFIRM BOOKING");
+  Future<void> confirmBooking(
+      String bookingId, String doctorId, String date, String time) async {
     try {
       emit(const BookingState.loading());
-      final status = await _bookingService.confirmBooking(bookingId);
-      print("STATUS = $status");
+      final status =
+          await _bookingService.confirmBooking(bookingId, doctorId, date, time);
       if (status == 200) {
         emit(const BookingState.success("Success"));
         await fetchClinicBooking();
@@ -65,7 +65,6 @@ class BookingCubit extends Cubit<BookingState> {
         emit(const BookingState.error("Cannot Confirm Booking"));
       }
     } on DioException catch (e) {
-      print("error ${e.toString()}");
       String errorMessage = 'Failed to confirm booking';
 
       if (e.response != null) {
@@ -86,37 +85,36 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
-  Future<void> payBooking(String bookingId) async {
-    try {
-      emit(const BookingState.loading());
-      final status = await _bookingService.payBooking(bookingId);
-      if (status == 200) {
-        emit(const BookingState.success("Payment processed successfully"));
-        // Refetch the bookings to get updated data
-        await fetchClinicBooking();
-      } else {
-        emit(const BookingState.error("Cannot process payment"));
-      }
-    } on DioException catch (e) {
-      String errorMessage = 'Failed to process payment';
+  // Future<void> payBooking(String bookingId) async {
+  //   try {
+  //     emit(const BookingState.loading());
+  //     final status = await _bookingService.payBooking(bookingId);
+  //     if (status == 200) {
+  //       emit(const BookingState.success("Payment processed successfully"));
+  //       // Refetch the bookings to get updated data
+  //       // await fetchClinicBooking();
+  //     } else {
+  //       emit(const BookingState.error("Cannot process payment"));
+  //     }
+  //   } on DioException catch (e) {
+  //     String errorMessage = 'Failed to process payment';
+  //     if (e.response != null) {
+  //       errorMessage = e.response?.data['message'] ?? 'Server error';
+  //     } else if (e.type == DioExceptionType.connectionTimeout) {
+  //       errorMessage =
+  //           'Connection timeout. Please check your internet connection.';
+  //     } else if (e.type == DioExceptionType.receiveTimeout) {
+  //       errorMessage = 'Request timeout. Please try again.';
+  //     } else if (e.type == DioExceptionType.connectionError) {
+  //       errorMessage =
+  //           'Connection error. Please check your internet connection.';
+  //     }
 
-      if (e.response != null) {
-        errorMessage = e.response?.data['message'] ?? 'Server error';
-      } else if (e.type == DioExceptionType.connectionTimeout) {
-        errorMessage =
-            'Connection timeout. Please check your internet connection.';
-      } else if (e.type == DioExceptionType.receiveTimeout) {
-        errorMessage = 'Request timeout. Please try again.';
-      } else if (e.type == DioExceptionType.connectionError) {
-        errorMessage =
-            'Connection error. Please check your internet connection.';
-      }
-
-      emit(BookingState.error(errorMessage));
-    } catch (e) {
-      emit(BookingState.error('Failed to process payment: ${e.toString()}'));
-    }
-  }
+  //     emit(BookingState.error(errorMessage));
+  //   } catch (e) {
+  //     emit(BookingState.error('Failed to process payment: ${e.toString()}'));
+  //   }
+  // }
 
   Future<void> cancelBooking(String bookingId) async {
     try {

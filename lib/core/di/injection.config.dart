@@ -14,7 +14,9 @@ import 'package:clinics/features/auth/cubit/user_cubit.dart' as _i142;
 import 'package:clinics/features/auth/services/token_storage_service.dart'
     as _i225;
 import 'package:clinics/features/booking/cubit/booking_cubit.dart' as _i999;
+import 'package:clinics/features/booking/cubit/clinic_cubit.dart' as _i983;
 import 'package:clinics/features/booking/service/booking_service.dart' as _i11;
+import 'package:clinics/features/booking/service/clinic_service.dart' as _i753;
 import 'package:clinics/features/home/cubit/advertisement_cubit.dart' as _i745;
 import 'package:clinics/features/home/cubit/city_cubit.dart' as _i1045;
 import 'package:clinics/features/home/cubit/language_cubit.dart' as _i267;
@@ -42,10 +44,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i225.TokenStorageService>(() => _i225.TokenStorageService());
     gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
     gh.factory<_i11.BookingService>(() => _i11.BookingService());
+    gh.factory<_i753.ClinicService>(() => _i753.ClinicService());
     gh.factory<_i999.BookingCubit>(
         () => _i999.BookingCubit(gh<_i11.BookingService>()));
     gh.factory<_i304.AuthCubit>(
         () => _i304.AuthCubit(gh<_i225.TokenStorageService>()));
+    gh.factory<_i983.ClinicCubit>(
+        () => _i983.ClinicCubit(gh<_i753.ClinicService>()));
     return this;
   }
 }

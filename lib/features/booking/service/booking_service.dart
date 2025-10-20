@@ -1,5 +1,6 @@
 import 'package:clinics/core/api/dio_client.dart';
 import 'package:clinics/features/booking/model/clinic_booking_model.dart';
+import 'package:clinics/features/booking/model/clinic_model.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
@@ -12,10 +13,9 @@ class BookingService {
       BookingStatus? status,
       String? fromDate,
       String? toDate) async {
-    
     // Build query parameters
     final Map<String, dynamic> queryParams = {};
-    
+
     if (username != null && username.isNotEmpty) {
       queryParams['username'] = username;
     }
@@ -31,10 +31,10 @@ class BookingService {
     if (toDate != null && toDate.isNotEmpty) {
       queryParams['toDate'] = toDate;
     }
-    
-    print("Fetching bookings with filters: $queryParams");
-    
-    final response = await _dio.get('/clinics/bookings', queryParameters: queryParams);
+
+    final response =
+        await _dio.get('/clinics/bookings', queryParameters: queryParams);
+
     final booking = (response.data as List<dynamic>)
         .map(
             (item) => ClinicBookingModel.fromJson(item as Map<String, dynamic>))
@@ -42,10 +42,10 @@ class BookingService {
     return booking;
   }
 
-  Future<int> confirmBooking(String bookingId) async {
-    print("bookingId = $bookingId");
-    final response = await _dio.patch('/bookings/$bookingId/confirm');
-    print("response = $response");
+  Future<int> confirmBooking(
+      String bookingId, String doctorId, String date, String time) async {
+    final response = await _dio.patch('/bookings/$bookingId/confirm',
+        data: {"doctorId": doctorId, "date": date, "time": time});
     return response.statusCode!;
   }
 

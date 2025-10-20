@@ -33,7 +33,7 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.bookingListing, // Use the static constant
-        builder: (context, state) => const BookingListingScreen(),
+        builder: (context, state) => const BookingListingScreenProvider(),
       ),
       GoRoute(
         path: AppRoutes.forgetPassword,

@@ -37,7 +37,6 @@ class HealthGuideApp extends StatelessWidget {
         BlocProvider(create: (context) => getIt<LanguageCubit>()),
         BlocProvider(create: (context) => getIt<ThemeCubit>()),
         BlocProvider(create: (context) => getIt<UserCubit>()),
-        BlocProvider(create: (context) => getIt<BookingCubit>()),
         BlocProvider(
           create: (context) => getIt<AuthCubit>()..checkAuthStatus(),
         ),

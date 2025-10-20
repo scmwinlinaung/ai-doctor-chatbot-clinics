@@ -1,3 +1,4 @@
+import 'package:clinics/core/widgets/custom_dropdown_button_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinics/core/widgets/custom_button.dart';
@@ -5,8 +6,12 @@ import 'package:clinics/core/widgets/loading_overlay.dart';
 import 'package:clinics/core/widgets/gradient_background.dart';
 import 'package:clinics/features/booking/cubit/booking_cubit.dart';
 import 'package:clinics/features/booking/model/clinic_booking_model.dart';
+import 'package:clinics/features/booking/model/doctor_model.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 import 'package:clinics/core/config/app_colors.dart';
+import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
+import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
@@ -23,6 +28,22 @@ class BookingFilters {
     this.fromDate,
     this.toDate,
   });
+}
+
+// Provider Wrapper for the screen
+class BookingListingScreenProvider extends StatelessWidget {
+  const BookingListingScreenProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => GetIt.instance<BookingCubit>()),
+        BlocProvider(create: (context) => GetIt.instance<ClinicCubit>()),
+      ],
+      child: const BookingListingScreen(),
+    );
+  }
 }
 
 class BookingListingScreen extends StatefulWidget {
@@ -257,7 +278,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                     child: CustomButton(
                       text: 'Confirm',
                       color: Theme.of(context).primaryColor,
-                      onPressed: () => _confirmBooking(context, booking.id!),
+                      onPressed: () => _confirmBooking(
+                          context, booking.id!, booking.clinic!),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -271,45 +293,23 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ],
               ),
             ] else if (booking.status == BookingStatus.confirmed) ...[
-              if (booking.paid == true) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
-                  ),
-                  child: Text(
-                    'Booking Confirmed & Paid',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                ),
+                child: Text(
+                  'Booking Confirmed',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ] else ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Pay Now',
-                        color: AppColors.primaryColor,
-                        onPressed: () => _payBooking(context, booking.id!),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Cancel',
-                        color: Colors.red,
-                        onPressed: () => _cancelBooking(context, booking.id!),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              )
             ],
           ],
         ),
@@ -387,56 +387,28 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
   String _formatDate(String dateString) {
     try {
       final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+      return DateFormat('dd/MM/yyyy HH:mm').format(date);
     } catch (e) {
       return dateString;
     }
   }
 
-  void _confirmBooking(BuildContext context, String bookingId) {
-    showDialog(
+  // UPDATED: Now opens the new modal
+  void _confirmBooking(
+      BuildContext context, String bookingId, String clinicId) {
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Confirm Booking'),
-        content: const Text('Are you sure you want to confirm this booking?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<BookingCubit>().confirmBooking(bookingId);
-            },
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _payBooking(BuildContext context, String bookingId) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Process Payment'),
-        content:
-            const Text('Are you sure you want to mark this booking as paid?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<BookingCubit>().payBooking(bookingId);
-            },
-            child: const Text('Mark as Paid'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: BlocProvider.of<BookingCubit>(context)),
+            BlocProvider.value(value: BlocProvider.of<ClinicCubit>(context)),
+          ],
+          child: _ConfirmBookingModal(bookingId: bookingId, clinicId: clinicId),
+        );
+      },
     );
   }
 
@@ -468,8 +440,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
   }
 }
 
-// NEW: Animated and Responsive Filter Modal
+// Filter Modal is unchanged
 class _FilterModalSheet extends StatefulWidget {
+  // ...
   final BookingFilters initialFilters;
   const _FilterModalSheet({required this.initialFilters});
 
@@ -479,7 +452,7 @@ class _FilterModalSheet extends StatefulWidget {
 
 class _FilterModalSheetState extends State<_FilterModalSheet>
     with SingleTickerProviderStateMixin {
-  // Controllers
+  // ... all filter modal code is unchanged
   late final TextEditingController _usernameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _fromDateController;
@@ -696,5 +669,244 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
         ),
       ),
     );
+  }
+}
+
+// NEW: Modal for Confirming a Booking
+class _ConfirmBookingModal extends StatefulWidget {
+  final String bookingId;
+  final String clinicId;
+
+  const _ConfirmBookingModal({
+    required this.bookingId,
+    required this.clinicId,
+  });
+
+  @override
+  State<_ConfirmBookingModal> createState() => _ConfirmBookingModalState();
+}
+
+class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
+  final _formKey = GlobalKey<FormState>();
+  String? _selectedDoctorId;
+  final _dateController = TextEditingController();
+  final _timeController = TextEditingController();
+
+  bool _isConfirming = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch the specific clinic details to get the doctor list
+    context.read<ClinicCubit>().getAClinicByID(widget.clinicId);
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _timeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+    }
+  }
+
+  Future<void> _selectTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialEntryMode: TimePickerEntryMode.dialOnly,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null && mounted) {
+      _timeController.text = picked.format(context);
+    }
+  }
+
+  void _onConfirm() {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isConfirming = true;
+      });
+      context.read<BookingCubit>().confirmBooking(
+            widget.bookingId,
+            _selectedDoctorId!,
+            _dateController.text,
+            _timeController.text,
+          );
+      // The listener on the main screen will handle success/error and pop
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GradientBackground(
+        child: Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 24,
+        right: 24,
+        top: 12,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Confirm Appointment',
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              BlocBuilder<ClinicCubit, ClinicState>(
+                builder: (context, state) {
+                  return state.when(
+                    initial: () => const SizedBox.shrink(),
+                    loading: () => const Center(child: LoadingWidget()),
+                    error: (message) => Center(
+                      child: Text(
+                        'Error loading doctors: $message',
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ),
+                    loaded: (clinic) {
+                      // Using your CustomDropdownButtonFormField now
+                      return CustomDropdownButtonFormField(
+                        labelText: 'Assign Doctor',
+                        icon: Icons.person_outline,
+                        value: _selectedDoctorId,
+                        items: (clinic.doctors ?? []).map((DoctorModel doctor) {
+                          return DropdownMenuItem<String>(
+                            value: doctor.id,
+                            child: Text(
+                              doctor.name ?? 'Unnamed Doctor',
+                              // Important for long names
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedDoctorId = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Please select a doctor' : null,
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _dateController,
+                decoration: InputDecoration(
+                  labelText: "Appointment Date",
+                  prefixIcon: const Icon(Icons.calendar_today_outlined,
+                      color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.2),
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  errorStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: const BorderSide(
+                      color: Colors.white38,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2.0,
+                    ),
+                  ),
+                ),
+                onTap: _selectDate,
+                readOnly: true,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a date'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _timeController,
+                decoration: InputDecoration(
+                  labelText: "Appointment Time",
+                  prefixIcon:
+                      const Icon(Icons.access_time, color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.2),
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  errorStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: const BorderSide(
+                      color: Colors.white38,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2.0,
+                    ),
+                  ),
+                ),
+                onTap: _selectTime,
+                readOnly: true,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a time'
+                    : null,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: CustomButton(
+                  text: 'Confirm Appointment',
+                  isLoading: _isConfirming,
+                  onPressed: _onConfirm,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    ));
   }
 }
