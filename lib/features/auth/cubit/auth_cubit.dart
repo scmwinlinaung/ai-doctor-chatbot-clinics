@@ -35,10 +35,10 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> login(String username, String password) async {
     emit(const AuthState.loading());
     try {
-      // final hashPassword = Cryptography().hashStringWithSha512(password);
+      final hashPassword = Cryptography().hashStringWithSha512(password);
       final Response response = await DioClient.instance.post(
         ApiRoute.login,
-        data: {'username': username, 'password': password},
+        data: {'username': username, 'password': hashPassword},
       );
       final dynamic data = response.data;
       final token = data['token'] as String;

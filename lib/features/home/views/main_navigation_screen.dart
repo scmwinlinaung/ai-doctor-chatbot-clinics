@@ -50,7 +50,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 },
               ),
               title: Text(
-                'Health Guide',
+                'Clinics',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).textTheme.titleLarge?.color,
