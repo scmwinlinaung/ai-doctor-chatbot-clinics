@@ -50,6 +50,7 @@ dependencies:
   flutter_quill: ^11.4.2
   markdown_quill: ^4.3.0 
   markdown: ^7.3.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   build_runner: ^2.4.12

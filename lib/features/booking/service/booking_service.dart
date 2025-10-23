@@ -34,11 +34,12 @@ class BookingService {
 
     final response =
         await _dio.get('/clinics/bookings', queryParameters: queryParams);
-
+    print("Bookding = ${response.data}");
     final booking = (response.data as List<dynamic>)
         .map(
             (item) => ClinicBookingModel.fromJson(item as Map<String, dynamic>))
         .toList();
+
     return booking;
   }
 

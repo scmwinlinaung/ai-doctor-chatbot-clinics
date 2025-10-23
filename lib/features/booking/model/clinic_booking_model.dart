@@ -14,6 +14,9 @@ class ClinicBookingModel with _$ClinicBookingModel {
     UserModel? user,
     BookingStatus? status,
     bool? paid,
+    String? confirmedDate,
+    String? doctorName,
+    String? date,
     String? createdAt,
   }) = _ClinicBookingModel;
 

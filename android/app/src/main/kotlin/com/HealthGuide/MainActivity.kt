@@ -1,4 +1,4 @@
-package com.HealthGuide
+package com.HealthGuideClinic
 
 import io.flutter.embedding.android.FlutterActivity
 

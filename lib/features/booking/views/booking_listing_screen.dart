@@ -12,6 +12,7 @@ import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart'; // ADDED: For launching phone dialer
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
@@ -99,6 +100,25 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
 
     if (result != null) {
       _applyFilters(result);
+    }
+  }
+
+  // ADDED: Helper method to launch the phone dialer
+  void _launchPhoneDialer(String? phoneNumber) async {
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Phone number is not available.')),
+      );
+      return;
+    }
+    final Uri url = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Could not launch phone dialer for $phoneNumber')),
+      );
     }
   }
 
@@ -232,6 +252,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
+  // --- WIDGETS MODIFIED AS PER REQUEST ---
+
   Widget _buildBookingCard(
       BuildContext context, ClinicBookingModel booking, ThemeData theme) {
     return Card(
@@ -261,38 +283,45 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             const SizedBox(height: 12),
             if (booking.user != null) ...[
               _buildInfoRow('Patient', booking.user!.username ?? 'N/A', theme),
-              _buildInfoRow('Phone', booking.user!.phoneno ?? 'N/A', theme),
+              // MODIFIED: Phone number is now clickable
+              InkWell(
+                onTap: () => _launchPhoneDialer(booking.user!.phoneno),
+                child: _buildInfoRow(
+                  'Phone',
+                  booking.user!.phoneno ?? 'N/A',
+                  theme,
+                  isLink: true, // This will style it like a link
+                ),
+              ),
             ],
-            _buildInfoRow('Clinic ID', booking.clinic ?? 'N/A', theme),
-            _buildInfoRow('Payment Status',
-                booking.paid == true ? 'Paid' : 'Unpaid', theme),
+            if (booking.doctorName != null)
+              _buildInfoRow(
+                  'Doctor Name', booking.doctorName.toString(), theme),
+            if (booking.confirmedDate != null)
+              _buildInfoRow(
+                  'Confirmed Date', booking.confirmedDate.toString(), theme),
             _buildInfoRow(
                 'Booking Status', booking.status!.name.toString(), theme),
+
             if (booking.createdAt != null)
               _buildInfoRow('Created', _formatDate(booking.createdAt!), theme),
             const SizedBox(height: 16),
+
+            // PENDING BOOKING: Show only the confirm button (full-width)
             if (booking.status == BookingStatus.booking) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomButton(
-                      text: 'Confirm',
-                      color: Theme.of(context).primaryColor,
-                      onPressed: () => _confirmBooking(
-                          context, booking.id!, booking.clinic!),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CustomButton(
-                      text: 'Cancel',
-                      color: Theme.of(context).colorScheme.error,
-                      onPressed: () => _cancelBooking(context, booking.id!),
-                    ),
-                  ),
-                ],
+              // MODIFIED: Removed the Row and Cancel button
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  text: 'Confirm',
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () =>
+                      _confirmBooking(context, booking.id!, booking.clinic!),
+                ),
               ),
-            ] else if (booking.status == BookingStatus.confirmed) ...[
+            ]
+            // CONFIRMED BOOKING: Display a confirmation message
+            else if (booking.status == BookingStatus.confirmed) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -317,14 +346,16 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, ThemeData theme) {
+  // MODIFIED: Added an optional 'isLink' parameter for styling
+  Widget _buildInfoRow(String label, String value, ThemeData theme,
+      {bool isLink = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 140,
             child: Text(
               '$label:',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -340,6 +371,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               value,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w400,
+                // Apply link styling if 'isLink' is true
+                color: isLink ? Colors.blue : null,
+                decoration: isLink ? TextDecoration.underline : null,
               ),
             ),
           ),
@@ -384,16 +418,17 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
+  // UPDATED: Now formats the date to a clear UTC format.
   String _formatDate(String dateString) {
     try {
-      final date = DateTime.parse(dateString);
-      return DateFormat('dd/MM/yyyy HH:mm').format(date);
+      final localDate = DateTime.parse(dateString);
+      final utcDate = localDate.toUtc();
+      return DateFormat("yyyy-MM-dd HH:mm:ss 'UTC'").format(utcDate);
     } catch (e) {
-      return dateString;
+      return dateString; // Fallback to original string if parsing fails
     }
   }
 
-  // UPDATED: Now opens the new modal
   void _confirmBooking(
       BuildContext context, String bookingId, String clinicId) {
     showModalBottomSheet(
@@ -412,37 +447,11 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  void _cancelBooking(BuildContext context, String bookingId) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancel Booking'),
-        content: const Text(
-            'Are you sure you want to cancel this booking? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('No'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<BookingCubit>().cancelBooking(bookingId);
-            },
-            child: const Text('Yes, Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
+  // REMOVED: The _cancelBooking method is no longer needed.
 }
 
-// Filter Modal is unchanged
+// Filter Modal is unchanged and remains as it was.
 class _FilterModalSheet extends StatefulWidget {
-  // ...
   final BookingFilters initialFilters;
   const _FilterModalSheet({required this.initialFilters});
 
@@ -452,16 +461,11 @@ class _FilterModalSheet extends StatefulWidget {
 
 class _FilterModalSheetState extends State<_FilterModalSheet>
     with SingleTickerProviderStateMixin {
-  // ... all filter modal code is unchanged
   late final TextEditingController _usernameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _fromDateController;
   late final TextEditingController _toDateController;
-
-  // State
   BookingStatus? _selectedStatus;
-
-  // Animation
   late final AnimationController _animationController;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
@@ -469,7 +473,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with initial filter values
     _usernameController =
         TextEditingController(text: widget.initialFilters.username);
     _phoneController =
@@ -480,7 +483,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
         TextEditingController(text: widget.initialFilters.toDate);
     _selectedStatus = widget.initialFilters.status;
 
-    // Setup animations
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -545,7 +547,7 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
   }
 
   void _clearAndClose() {
-    Navigator.of(context).pop(BookingFilters()); // Pop with empty filters
+    Navigator.of(context).pop(BookingFilters());
   }
 
   @override
@@ -572,7 +574,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Modal Handle
                   Center(
                     child: Container(
                       width: 40,
@@ -584,15 +585,12 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Header
                   Text(
                     'Filter Bookings',
                     style: theme.textTheme.headlineSmall
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 24),
-
-                  // Form Fields (in a responsive single column)
                   TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
@@ -639,8 +637,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                     readOnly: true,
                   ),
                   const SizedBox(height: 32),
-
-                  // Action Buttons
                   Row(
                     children: [
                       Expanded(
@@ -672,7 +668,7 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
   }
 }
 
-// NEW: Modal for Confirming a Booking
+// Confirm Booking Modal is unchanged and remains as it was.
 class _ConfirmBookingModal extends StatefulWidget {
   final String bookingId;
   final String clinicId;
@@ -697,7 +693,6 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
   @override
   void initState() {
     super.initState();
-    // Fetch the specific clinic details to get the doctor list
     context.read<ClinicCubit>().getAClinicByID(widget.clinicId);
   }
 
@@ -742,7 +737,6 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
             _dateController.text,
             _timeController.text,
           );
-      // The listener on the main screen will handle success/error and pop
       Navigator.of(context).pop();
     }
   }
@@ -794,7 +788,6 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                       ),
                     ),
                     loaded: (clinic) {
-                      // Using your CustomDropdownButtonFormField now
                       return CustomDropdownButtonFormField(
                         labelText: 'Assign Doctor',
                         icon: Icons.person_outline,
@@ -804,7 +797,6 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                             value: doctor.id,
                             child: Text(
                               doctor.name ?? 'Unnamed Doctor',
-                              // Important for long names
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
