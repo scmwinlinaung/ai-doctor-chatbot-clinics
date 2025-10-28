@@ -1,4 +1,5 @@
 import 'package:clinics/core/widgets/custom_dropdown_button_form_field.dart';
+import 'package:clinics/features/home/views/user_settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinics/core/widgets/custom_button.dart';
@@ -184,6 +185,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                   onPressed: _showFilterModal,
                 ),
               ],
+            ),
+            drawer: const Drawer(
+              child: UserSettingsScreen(),
             ),
             // Body is now a Column to hold the toggle buttons and the list
             body: Column(
