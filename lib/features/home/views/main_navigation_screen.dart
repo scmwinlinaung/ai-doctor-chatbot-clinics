@@ -11,6 +11,7 @@ import 'package:clinics/features/booking/model/doctor_model.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
+import 'package:clinics/core/util/date_utils.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -307,36 +308,38 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
       child: Row(
         children: [
           Expanded(
-            child: _currentView == BookingView.booking
-                ? CustomButton(
-                    text: 'Booking',
-                    onPressed: () {}, // Already selected, do nothing
-                  )
-                : OutlinedButton(
-                    child: const Text('Booking'),
-                    onPressed: () {
-                      setState(() {
-                        _currentView = BookingView.booking;
-                      });
-                    },
-                  ),
-          ),
+              child: CustomButton(
+            borderColor: Colors.grey,
+            color: _currentView == BookingView.booking
+                ? Theme.of(context).primaryColor
+                : Colors.transparent,
+            textColor: _currentView == BookingView.booking
+                ? Colors.white
+                : Colors.black,
+            text: 'Booking',
+            onPressed: () {
+              setState(() {
+                _currentView = BookingView.booking;
+              });
+            }, // Already selected, do nothing
+          )),
           const SizedBox(width: 12),
           Expanded(
-            child: _currentView == BookingView.confirmed
-                ? CustomButton(
-                    text: 'Confirm',
-                    onPressed: () {}, // Already selected, do nothing
-                  )
-                : OutlinedButton(
-                    child: const Text('Confirm'),
-                    onPressed: () {
-                      setState(() {
-                        _currentView = BookingView.confirmed;
-                      });
-                    },
-                  ),
-          ),
+              child: CustomButton(
+            borderColor: Colors.grey,
+            color: _currentView == BookingView.confirmed
+                ? Theme.of(context).primaryColor
+                : Colors.transparent,
+            textColor: _currentView == BookingView.confirmed
+                ? Colors.white
+                : Colors.black,
+            text: 'Confirm',
+            onPressed: () {
+              setState(() {
+                _currentView = BookingView.confirmed;
+              });
+            }, // Already selected, do nothing
+          )),
         ],
       ),
     );
@@ -371,12 +374,12 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             ),
             const SizedBox(height: 12),
             if (booking.user != null) ...[
-              _buildInfoRow('Patient', booking.user!.username ?? 'N/A', theme),
+              _buildInfoRow('Patient', booking.user?.username ?? 'N/A', theme),
               InkWell(
                 onTap: () => _launchPhoneDialer(booking.user!.phoneno),
                 child: _buildInfoRow(
                   'Phone',
-                  booking.user!.phoneno ?? 'N/A',
+                  booking.user?.phoneno ?? 'N/A',
                   theme,
                   isLink: true,
                 ),
@@ -393,7 +396,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 'Booking Status', booking.status!.name.toString(), theme),
 
             if (booking.createdAt != null)
-              _buildInfoRow('Created', _formatDate(booking.createdAt!), theme),
+              _buildInfoRow(
+                  'Created',
+                  DateUtil.formatStringToLocalDateTime(booking.createdAt!),
+                  theme),
             const SizedBox(height: 16),
 
             // Show "Confirm" button only for pending bookings
@@ -504,17 +510,6 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
         ),
       ),
     );
-  }
-
-  // Formats the date string into a standard UTC format
-  String _formatDate(String dateString) {
-    try {
-      final localDate = DateTime.parse(dateString);
-      final utcDate = localDate.toUtc();
-      return DateFormat("yyyy-MM-dd HH:mm:ss 'UTC'").format(utcDate);
-    } catch (e) {
-      return dateString;
-    }
   }
 
   // Shows the confirmation modal sheet

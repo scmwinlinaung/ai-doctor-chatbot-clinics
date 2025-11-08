@@ -6,6 +6,7 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Color color;
   final Color textColor;
+  final Color borderColor;
   final bool isLoading; // NEW: Added for loading state
 
   const CustomButton({
@@ -13,6 +14,7 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.color = AppColors.primaryColor,
+    this.borderColor = Colors.transparent,
     this.textColor = Colors.white,
     this.isLoading = false, // Default to not loading
   });
@@ -22,11 +24,14 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-
+        side: BorderSide(color: borderColor),
         // Provide visual feedback when the button is disabled (during loading)
         disabledBackgroundColor: color.withOpacity(0.7),
+
         padding: const EdgeInsets.symmetric(vertical: 16.0),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
       ),
       // If isLoading is true, onPressed becomes null, disabling the button
       onPressed: isLoading ? null : onPressed,

@@ -10,6 +10,7 @@ import 'package:clinics/features/booking/model/doctor_model.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
+import 'package:clinics/core/util/date_utils.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart'; // ADDED: For launching phone dialer
@@ -282,13 +283,13 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             ),
             const SizedBox(height: 12),
             if (booking.user != null) ...[
-              _buildInfoRow('Patient', booking.user!.username ?? 'N/A', theme),
+              _buildInfoRow('Patient', booking.user?.username ?? 'N/A', theme),
               // MODIFIED: Phone number is now clickable
               InkWell(
                 onTap: () => _launchPhoneDialer(booking.user!.phoneno),
                 child: _buildInfoRow(
                   'Phone',
-                  booking.user!.phoneno ?? 'N/A',
+                  booking.user?.phoneno ?? 'N/A',
                   theme,
                   isLink: true, // This will style it like a link
                 ),
@@ -299,12 +300,17 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                   'Doctor Name', booking.doctorName.toString(), theme),
             if (booking.confirmedDate != null)
               _buildInfoRow(
-                  'Confirmed Date', booking.confirmedDate.toString(), theme),
+                  'Confirmed Date',
+                  DateUtil.formatStringToLocalDateTime(booking.confirmedDate!),
+                  theme),
             _buildInfoRow(
                 'Booking Status', booking.status!.name.toString(), theme),
 
             if (booking.createdAt != null)
-              _buildInfoRow('Created', _formatDate(booking.createdAt!), theme),
+              _buildInfoRow(
+                  'Created',
+                  DateUtil.formatStringToLocalDateTime(booking.createdAt!),
+                  theme),
             const SizedBox(height: 16),
 
             // PENDING BOOKING: Show only the confirm button (full-width)
@@ -416,17 +422,6 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
         ),
       ),
     );
-  }
-
-  // UPDATED: Now formats the date to a clear UTC format.
-  String _formatDate(String dateString) {
-    try {
-      final localDate = DateTime.parse(dateString);
-      final utcDate = localDate.toUtc();
-      return DateFormat("yyyy-MM-dd HH:mm:ss 'UTC'").format(utcDate);
-    } catch (e) {
-      return dateString; // Fallback to original string if parsing fails
-    }
   }
 
   void _confirmBooking(
