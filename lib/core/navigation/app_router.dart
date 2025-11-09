@@ -6,7 +6,6 @@ import 'package:clinics/features/auth/views/forget_password_screen.dart';
 import 'package:clinics/features/auth/views/login_screen.dart';
 import 'package:clinics/features/home/views/splash_screen.dart';
 import 'package:clinics/features/subscription/views/subscription_screen.dart';
-import 'package:clinics/features/booking/views/booking_listing_screen.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -31,10 +30,10 @@ class AppRouter {
         path: AppRoutes.subscription, // Use the static constant
         builder: (context, state) => const SubscriptionScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.bookingListing, // Use the static constant
-        builder: (context, state) => const BookingListingScreenProvider(),
-      ),
+      // GoRoute(
+      //   path: AppRoutes.bookingListing, // Use the static constant
+      //   builder: (context, state) => const BookingListingScreenProvider(),
+      // ),
       GoRoute(
         path: AppRoutes.forgetPassword,
         builder: (context, state) => const ForgetPasswordScreen(),

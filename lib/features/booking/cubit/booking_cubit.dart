@@ -30,6 +30,7 @@ class BookingCubit extends Cubit<BookingState> {
         fromDate,
         toDate,
       );
+      print("last booking = ${bookings[bookings.length - 1]}");
       emit(BookingState.loaded(bookings));
     } on DioException catch (e) {
       String errorMessage = 'An error occurred';

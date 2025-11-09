@@ -35,7 +35,7 @@ class DateUtil {
 
   static String formatStringToDateOnly(String dateString) {
     try {
-      final DateTime dateTime = DateTime.parse(dateString);
+      final DateTime dateTime = DateTime.parse(dateString).toLocal();
       return formatDateOnly(dateTime);
     } catch (e) {
       return dateString; // Fallback to original string if parsing fails

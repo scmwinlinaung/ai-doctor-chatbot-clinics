@@ -11,7 +11,7 @@ import 'package:clinics/features/booking/model/doctor_model.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
-import 'package:clinics/core/util/date_utils.dart';
+import 'package:clinics/core/util/date_util.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -232,6 +232,15 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                                     style: theme.textTheme.bodyLarge
                                         ?.copyWith(color: Colors.grey),
                                   ),
+                                  const SizedBox(height: 16),
+                                  CustomButton(
+                                    text: 'Retry',
+                                    onPressed: () {
+                                      context
+                                          .read<BookingCubit>()
+                                          .fetchClinicBooking();
+                                    },
+                                  ),
                                 ],
                               ),
                             );
@@ -391,7 +400,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                   'Doctor Name', booking.doctorName.toString(), theme),
             if (booking.confirmedDate != null)
               _buildInfoRow(
-                  'Confirmed Date', booking.confirmedDate.toString(), theme),
+                  'Confirmed Date',
+                  "${DateUtil.formatStringToDateOnly(booking.confirmedDate.toString())} ${booking.time!}",
+                  theme),
             _buildInfoRow(
                 'Booking Status', booking.status!.name.toString(), theme),
 
@@ -414,25 +425,48 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ),
               ),
             ]
-            // Show a "Confirmed" banner for confirmed bookings
+            // Show buttons for confirmed bookings
             else if (booking.status == BookingStatus.confirmed) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
-                ),
-                child: Text(
-                  'Booking Confirmed',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border:
+                            Border.all(color: Colors.green.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        'Booking Confirmed',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              )
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _bookAgain(context, booking),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Book Again'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
@@ -526,6 +560,24 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             BlocProvider.value(value: BlocProvider.of<ClinicCubit>(context)),
           ],
           child: _ConfirmBookingModal(bookingId: bookingId, clinicId: clinicId),
+        );
+      },
+    );
+  }
+
+  // Shows the book again modal for confirmed bookings
+  void _bookAgain(BuildContext context, ClinicBookingModel booking) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: BlocProvider.of<BookingCubit>(context)),
+            BlocProvider.value(value: BlocProvider.of<ClinicCubit>(context)),
+          ],
+          child: _BookAgainModal(booking: booking),
         );
       },
     );
@@ -723,11 +775,13 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _clearAndClose,
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                           child: const Text('Clear'),
+                          onPressed: _clearAndClose,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -974,6 +1028,282 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                   text: 'Confirm Appointment',
                   isLoading: _isConfirming,
                   onPressed: _onConfirm,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    ));
+  }
+}
+
+// The Book Again Modal for confirmed bookings
+class _BookAgainModal extends StatefulWidget {
+  final ClinicBookingModel booking;
+
+  const _BookAgainModal({
+    required this.booking,
+  });
+
+  @override
+  State<_BookAgainModal> createState() => _BookAgainModalState();
+}
+
+class _BookAgainModalState extends State<_BookAgainModal> {
+  final _formKey = GlobalKey<FormState>();
+  String? _selectedDoctorId;
+  final _dateController = TextEditingController();
+  final _timeController = TextEditingController();
+
+  bool _isBooking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill with existing booking data if available
+    if (widget.booking.clinic != null) {
+      context.read<ClinicCubit>().getAClinicByID(widget.booking.clinic!);
+    }
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _timeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+    }
+  }
+
+  Future<void> _selectTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialEntryMode: TimePickerEntryMode.dialOnly,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null && mounted) {
+      _timeController.text = picked.format(context);
+    }
+  }
+
+  void _onBookAgain() {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isBooking = true;
+      });
+
+      // Create a new booking using the confirmBooking API
+      // We'll use the original booking ID to create a new booking with same details
+      context.read<BookingCubit>().confirmBooking(
+            widget.booking.id!,
+            _selectedDoctorId!,
+            _dateController.text,
+            _timeController.text,
+          );
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GradientBackground(
+        child: Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 24,
+        right: 24,
+        top: 12,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Book Appointment Again',
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Book a new appointment with the same details',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Patient info display
+              if (widget.booking.user != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Patient Information',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Name: ${widget.booking.user?.username ?? 'N/A'}'),
+                      Text('Phone: ${widget.booking.user?.phoneno ?? 'N/A'}'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              BlocBuilder<ClinicCubit, ClinicState>(
+                builder: (context, state) {
+                  return state.when(
+                    initial: () => const SizedBox.shrink(),
+                    loading: () => const Center(child: LoadingWidget()),
+                    error: (message) => Center(
+                      child: Text(
+                        'Error loading doctors: $message',
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ),
+                    loaded: (clinic) {
+                      return CustomDropdownButtonFormField(
+                        labelText: 'Assign Doctor',
+                        icon: Icons.person_outline,
+                        value: _selectedDoctorId,
+                        items: (clinic.doctors ?? []).map((DoctorModel doctor) {
+                          return DropdownMenuItem<String>(
+                            value: doctor.id,
+                            child: Text(
+                              doctor.name ?? 'Unnamed Doctor',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedDoctorId = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Please select a doctor' : null,
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _dateController,
+                decoration: InputDecoration(
+                  labelText: "Appointment Date",
+                  prefixIcon: const Icon(Icons.calendar_today_outlined,
+                      color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.2),
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  errorStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: const BorderSide(
+                      color: Colors.white38,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2.0,
+                    ),
+                  ),
+                ),
+                onTap: _selectDate,
+                readOnly: true,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a date'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _timeController,
+                decoration: InputDecoration(
+                  labelText: "Appointment Time",
+                  prefixIcon:
+                      const Icon(Icons.access_time, color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.2),
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  errorStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: const BorderSide(
+                      color: Colors.white38,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2.0,
+                    ),
+                  ),
+                ),
+                onTap: _selectTime,
+                readOnly: true,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a time'
+                    : null,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: CustomButton(
+                  text: 'Book New Appointment',
+                  isLoading: _isBooking,
+                  onPressed: _onBookAgain,
                 ),
               ),
               const SizedBox(height: 20),
