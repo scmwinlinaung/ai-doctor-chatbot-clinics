@@ -1,6 +1,6 @@
 import 'package:clinics/core/api/dio_client.dart';
 import 'package:clinics/features/booking/model/clinic_booking_model.dart';
-import 'package:clinics/features/booking/model/clinic_model.dart';
+
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
@@ -8,6 +8,7 @@ import 'package:injectable/injectable.dart';
 class BookingService {
   final Dio _dio = DioClient.instance;
   Future<List<ClinicBookingModel>> fetchClinicBooking(
+      String? doctorname,
       String? username,
       String? phonenumber,
       BookingStatus? status,
@@ -30,6 +31,9 @@ class BookingService {
     }
     if (toDate != null && toDate.isNotEmpty) {
       queryParams['toDate'] = toDate;
+    }
+    if (doctorname != null && doctorname.isNotEmpty) {
+      queryParams['doctorname'] = doctorname;
     }
     final response =
         await _dio.get('/clinics/bookings', queryParameters: queryParams);

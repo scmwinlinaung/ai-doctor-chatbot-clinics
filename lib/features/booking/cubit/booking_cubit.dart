@@ -15,6 +15,7 @@ class BookingCubit extends Cubit<BookingState> {
   BookingCubit(this._bookingService) : super(const BookingState.initial());
 
   Future<void> fetchClinicBooking({
+    String? doctorname,
     String? username,
     String? phonenumber,
     BookingStatus? status,
@@ -24,6 +25,7 @@ class BookingCubit extends Cubit<BookingState> {
     try {
       emit(const BookingState.loading());
       final bookings = await _bookingService.fetchClinicBooking(
+        doctorname,
         username,
         phonenumber,
         status,

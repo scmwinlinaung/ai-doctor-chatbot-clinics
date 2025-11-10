@@ -21,6 +21,7 @@ enum BookingView { booking, confirmed }
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
+  final String? doctorname;
   final String? username;
   final String? phoneNumber;
   final BookingStatus? status;
@@ -28,6 +29,7 @@ class BookingFilters {
   final String? toDate;
 
   BookingFilters({
+    this.doctorname,
     this.username,
     this.phoneNumber,
     this.status,
@@ -78,6 +80,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     });
 
     context.read<BookingCubit>().fetchClinicBooking(
+          doctorname: filters.doctorname,
           username: filters.username,
           phonenumber: filters.phoneNumber,
           status: filters.status,
@@ -617,6 +620,7 @@ class _FilterModalSheet extends StatefulWidget {
 
 class _FilterModalSheetState extends State<_FilterModalSheet>
     with SingleTickerProviderStateMixin {
+  late final TextEditingController _doctorController;
   late final TextEditingController _usernameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _fromDateController;
@@ -629,6 +633,8 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
   @override
   void initState() {
     super.initState();
+    _doctorController =
+        TextEditingController(text: widget.initialFilters.doctorname);
     _usernameController =
         TextEditingController(text: widget.initialFilters.username);
     _phoneController =
@@ -661,6 +667,7 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
 
   @override
   void dispose() {
+    _doctorController.dispose();
     _usernameController.dispose();
     _phoneController.dispose();
     _fromDateController.dispose();
@@ -685,6 +692,9 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
 
   void _applyAndClose() {
     final filters = BookingFilters(
+      doctorname: _doctorController.text.trim().isEmpty
+          ? null
+          : _doctorController.text.trim(),
       username: _usernameController.text.trim().isEmpty
           ? null
           : _usernameController.text.trim(),
@@ -745,6 +755,13 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                     'Filter Bookings',
                     style: theme.textTheme.headlineSmall
                         ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _doctorController,
+                    decoration: const InputDecoration(
+                        labelText: 'Doctor',
+                        prefixIcon: Icon(Icons.person_outline)),
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
