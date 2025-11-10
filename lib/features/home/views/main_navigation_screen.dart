@@ -474,6 +474,22 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
+  bool _isConfirmedYesterday(String? confirmedDate) {
+    if (confirmedDate == null) return false;
+
+    try {
+      final date = DateTime.parse(confirmedDate);
+      final now = DateTime.now();
+      final yesterdayConfirmed = date.subtract(const Duration(days: 1));
+      // Compare only the date part (ignoring time)
+      return now.year == yesterdayConfirmed.year &&
+          now.month == yesterdayConfirmed.month &&
+          now.day == yesterdayConfirmed.day;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Helper widget for a label-value row
   Widget _buildInfoRow(String label, String value, ThemeData theme,
       {bool isLink = false}) {
@@ -504,6 +520,12 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               ),
             ),
           ),
+          if (label == 'Confirmed Date' && _isConfirmedYesterday(value))
+            const Icon(
+              Icons.check_circle,
+              color: Colors.green,
+              size: 22,
+            ),
         ],
       ),
     );
