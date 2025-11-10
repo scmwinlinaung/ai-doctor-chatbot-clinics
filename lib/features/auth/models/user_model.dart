@@ -6,7 +6,7 @@ part 'user_model.g.dart';
 @freezed
 class UserModel with _$UserModel {
   const factory UserModel({
-    @Default("") String id,
+    @JsonKey(name: "_id") @Default("") String id,
     @Default("") String username,
     @Default("") String phoneno,
     @Default("") String role,

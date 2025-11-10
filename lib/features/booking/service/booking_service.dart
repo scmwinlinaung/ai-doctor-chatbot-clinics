@@ -52,6 +52,19 @@ class BookingService {
     return response.statusCode!;
   }
 
+  Future<int> bookAgain(String clinicId, String doctorId, String userId,
+      String date, String time, int serialNumber) async {
+    final response = await _dio.post('/bookings/new_booking', data: {
+      "clinicId": clinicId,
+      "userId": userId,
+      "doctorId": doctorId,
+      "date": date,
+      "time": time,
+      "serialNumber": serialNumber
+    });
+    return response.statusCode!;
+  }
+
   Future<int> payBooking(String bookingId) async {
     final response = await _dio.patch('/bookings/$bookingId/pay');
     return response.statusCode!;

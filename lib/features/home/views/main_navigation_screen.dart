@@ -1145,12 +1145,13 @@ class _BookAgainModalState extends State<_BookAgainModal> {
 
       // Create a new booking using the confirmBooking API
       // We'll use the original booking ID to create a new booking with same details
-      context.read<BookingCubit>().confirmBooking(
-            widget.booking.id!,
-            _selectedDoctorId!,
-            _dateController.text,
-            _timeController.text,
-          );
+      context.read<BookingCubit>().bookAgain(
+          widget.booking.clinic!,
+          _selectedDoctorId!,
+          widget.booking.user!.id,
+          _dateController.text,
+          _timeController.text,
+          0);
       Navigator.of(context).pop();
     }
   }

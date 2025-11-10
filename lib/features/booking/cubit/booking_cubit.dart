@@ -32,7 +32,6 @@ class BookingCubit extends Cubit<BookingState> {
         fromDate,
         toDate,
       );
-      print("last booking = ${bookings[bookings.length - 1]}");
       emit(BookingState.loaded(bookings));
     } on DioException catch (e) {
       String errorMessage = 'An error occurred';
@@ -70,6 +69,38 @@ class BookingCubit extends Cubit<BookingState> {
     } on DioException catch (e) {
       String errorMessage = 'Failed to confirm booking';
 
+      if (e.response != null) {
+        errorMessage = e.response?.data['message'] ?? 'Server error';
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage =
+            'Connection timeout. Please check your internet connection.';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = 'Request timeout. Please try again.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage =
+            'Connection error. Please check your internet connection.';
+      }
+
+      emit(BookingState.error(errorMessage));
+    } catch (e) {
+      emit(BookingState.error('Failed to confirm booking: ${e.toString()}'));
+    }
+  }
+
+  Future<void> bookAgain(String clinicId, String doctorId, String userId,
+      String date, String time, int? serialNumber) async {
+    try {
+      emit(const BookingState.loading());
+      final status = await _bookingService.bookAgain(
+          clinicId, doctorId, userId, date, time, serialNumber ?? 0);
+      if (status == 201) {
+        emit(const BookingState.success("Success Booking Again"));
+        await fetchClinicBooking();
+      } else {
+        emit(const BookingState.error("Cannot Confirm Booking"));
+      }
+    } on DioException catch (e) {
+      String errorMessage = 'Failed to confirm booking';
       if (e.response != null) {
         errorMessage = e.response?.data['message'] ?? 'Server error';
       } else if (e.type == DioExceptionType.connectionTimeout) {
