@@ -54,12 +54,12 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
-  Future<void> confirmBooking(
-      String bookingId, String doctorId, String date, String time) async {
+  Future<void> confirmBooking(String bookingId, String doctorId, String date,
+      String time, int serialNumber) async {
     try {
       emit(const BookingState.loading());
-      final status =
-          await _bookingService.confirmBooking(bookingId, doctorId, date, time);
+      final status = await _bookingService.confirmBooking(
+          bookingId, doctorId, date, time, serialNumber);
       if (status == 200) {
         emit(const BookingState.success("Success"));
         await fetchClinicBooking();

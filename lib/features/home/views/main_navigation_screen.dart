@@ -862,6 +862,7 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
   String? _selectedDoctorId;
   final _dateController = TextEditingController();
   final _timeController = TextEditingController();
+  final _serialNumberController = TextEditingController();
 
   bool _isConfirming = false;
 
@@ -875,6 +876,7 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
   void dispose() {
     _dateController.dispose();
     _timeController.dispose();
+    _serialNumberController.dispose();
     super.dispose();
   }
 
@@ -906,11 +908,13 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
       setState(() {
         _isConfirming = true;
       });
+      final serialNumber = int.tryParse(_serialNumberController.text) ?? 0;
       context.read<BookingCubit>().confirmBooking(
             widget.bookingId,
             _selectedDoctorId!,
             _dateController.text,
             _timeController.text,
+            serialNumber,
           );
       Navigator.of(context).pop();
     }
@@ -1058,6 +1062,41 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                 readOnly: true,
                 validator: (value) => value == null || value.isEmpty
                     ? 'Please select a time'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _serialNumberController,
+                decoration: InputDecoration(
+                  labelText: "Serial Number",
+                  prefixIcon:
+                      const Icon(Icons.numbers, color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.2),
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  errorStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: const BorderSide(
+                      color: Colors.white38,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2.0,
+                    ),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter a serial number'
                     : null,
               ),
               const SizedBox(height: 20),

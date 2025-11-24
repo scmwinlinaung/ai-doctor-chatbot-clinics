@@ -45,10 +45,14 @@ class BookingService {
     return booking;
   }
 
-  Future<int> confirmBooking(
-      String bookingId, String doctorId, String date, String time) async {
-    final response = await _dio.patch('/bookings/$bookingId/confirm',
-        data: {"doctorId": doctorId, "date": date, "time": time});
+  Future<int> confirmBooking(String bookingId, String doctorId, String date,
+      String time, int serialNumber) async {
+    final response = await _dio.patch('/bookings/$bookingId/confirm', data: {
+      "doctorId": doctorId,
+      "date": date,
+      "time": time,
+      "serialNumber": serialNumber
+    });
     return response.statusCode!;
   }
 
