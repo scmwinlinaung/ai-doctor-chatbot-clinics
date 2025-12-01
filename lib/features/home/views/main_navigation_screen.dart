@@ -21,18 +21,18 @@ enum BookingView { booking, confirmed }
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
-  // final String? doctorname;
+  final String? doctorname;
   final String? username;
   final String? phoneNumber;
-  // final BookingStatus? status;
+  final BookingStatus? status;
   final String? fromDate;
   final String? toDate;
 
   BookingFilters({
-    // this.doctorname,
+    this.doctorname,
     this.username,
     this.phoneNumber,
-    // this.status,
+    this.status,
     this.fromDate,
     this.toDate,
   });
@@ -80,10 +80,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     });
 
     context.read<BookingCubit>().fetchClinicBooking(
-          // doctorname: filters.doctorname,
+          doctorname: filters.doctorname,
           username: filters.username,
           phonenumber: filters.phoneNumber,
-          // status: filters.status,
+          status: filters.status,
           fromDate: filters.fromDate,
           toDate: filters.toDate,
         );
@@ -104,7 +104,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
-        return _FilterModalSheet(initialFilters: _currentFilters);
+        return _FilterModalSheet(
+          initialFilters: _currentFilters,
+          currentView: _currentView,
+        );
       },
     );
 
@@ -612,7 +615,11 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
 // The Filter Modal Sheet (unchanged)
 class _FilterModalSheet extends StatefulWidget {
   final BookingFilters initialFilters;
-  const _FilterModalSheet({required this.initialFilters});
+  final BookingView currentView;
+  const _FilterModalSheet({
+    required this.initialFilters,
+    required this.currentView,
+  });
 
   @override
   State<_FilterModalSheet> createState() => _FilterModalSheetState();
@@ -620,12 +627,12 @@ class _FilterModalSheet extends StatefulWidget {
 
 class _FilterModalSheetState extends State<_FilterModalSheet>
     with SingleTickerProviderStateMixin {
-  // late final TextEditingController _doctorController;
+  late final TextEditingController _doctorController;
   late final TextEditingController _usernameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _fromDateController;
   late final TextEditingController _toDateController;
-  // BookingStatus? _selectedStatus;
+  BookingStatus? _selectedStatus;
   late final AnimationController _animationController;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
@@ -633,8 +640,8 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
   @override
   void initState() {
     super.initState();
-    // _doctorController =
-    //     TextEditingController(text: widget.initialFilters.doctorname);
+    _doctorController =
+        TextEditingController(text: widget.initialFilters.doctorname);
     _usernameController =
         TextEditingController(text: widget.initialFilters.username);
     _phoneController =
@@ -643,7 +650,10 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
         TextEditingController(text: widget.initialFilters.fromDate);
     _toDateController =
         TextEditingController(text: widget.initialFilters.toDate);
-    // _selectedStatus = widget.initialFilters.status;
+    _selectedStatus = widget.initialFilters.status ??
+        (widget.currentView == BookingView.booking
+            ? BookingStatus.booking
+            : BookingStatus.confirmed);
 
     _animationController = AnimationController(
       vsync: this,
@@ -667,7 +677,7 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
 
   @override
   void dispose() {
-    // _doctorController.dispose();
+    _doctorController.dispose();
     _usernameController.dispose();
     _phoneController.dispose();
     _fromDateController.dispose();
@@ -692,16 +702,16 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
 
   void _applyAndClose() {
     final filters = BookingFilters(
-      // doctorname: _doctorController.text.trim().isEmpty
-      //     ? null
-      //     : _doctorController.text.trim(),
+      doctorname: _doctorController.text.trim().isEmpty
+          ? null
+          : _doctorController.text.trim(),
       username: _usernameController.text.trim().isEmpty
           ? null
           : _usernameController.text.trim(),
       phoneNumber: _phoneController.text.trim().isEmpty
           ? null
           : _phoneController.text.trim(),
-      // status: _selectedStatus,
+      status: _selectedStatus,
       fromDate: _fromDateController.text.trim().isEmpty
           ? null
           : _fromDateController.text.trim(),
@@ -756,14 +766,17 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                     style: theme.textTheme.headlineSmall
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  // const SizedBox(height: 24),
-                  // TextFormField(
-                  //   controller: _doctorController,
-                  //   decoration: const InputDecoration(
-                  //       labelText: 'Doctor',
-                  //       prefixIcon: Icon(Icons.person_outline)),
-                  // ),
                   const SizedBox(height: 24),
+                  // Show doctor filter only when currentView is confirmed
+                  if (widget.currentView == BookingView.confirmed) ...[
+                    TextFormField(
+                      controller: _doctorController,
+                      decoration: const InputDecoration(
+                          labelText: 'Doctor',
+                          prefixIcon: Icon(Icons.person_outline)),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
@@ -777,20 +790,20 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                         labelText: 'Phone Number',
                         prefixIcon: Icon(Icons.phone_outlined)),
                   ),
-                  // const SizedBox(height: 16),
-                  // DropdownButtonFormField<BookingStatus>(
-                  //   value: _selectedStatus,
-                  //   decoration: const InputDecoration(
-                  //       labelText: 'Status',
-                  //       prefixIcon: Icon(Icons.info_outline)),
-                  //   items: BookingStatus.values.map((status) {
-                  //     return DropdownMenuItem(
-                  //         value: status,
-                  //         child: Text(status.name.toUpperCase()));
-                  //   }).toList(),
-                  //   onChanged: (value) =>
-                  //       setState(() => _selectedStatus = value),
-                  // ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<BookingStatus>(
+                    value: _selectedStatus,
+                    decoration: const InputDecoration(
+                        labelText: 'Status',
+                        prefixIcon: Icon(Icons.info_outline)),
+                    items: BookingStatus.values.map((status) {
+                      return DropdownMenuItem(
+                          value: status,
+                          child: Text(status.name.toUpperCase()));
+                    }).toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedStatus = value),
+                  ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _fromDateController,
