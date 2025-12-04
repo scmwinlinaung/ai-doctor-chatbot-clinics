@@ -21,6 +21,14 @@ class TokenStorageService {
     return await _secureStorage.read(key: 'user_id');
   }
 
+  Future<void> saveClinicId(String clinicId) async {
+    await _secureStorage.write(key: 'clinic_id', value: clinicId);
+  }
+
+  Future<String?> getClinicId() async {
+    return await _secureStorage.read(key: 'clinic_id');
+  }
+
   Future<void> deleteToken() async {
     await _secureStorage.delete(key: 'jwt_token');
   }

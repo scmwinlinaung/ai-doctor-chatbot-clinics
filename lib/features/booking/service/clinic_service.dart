@@ -1,5 +1,4 @@
 import 'package:clinics/core/api/dio_client.dart';
-import 'package:clinics/features/booking/model/clinic_booking_model.dart';
 import 'package:clinics/features/booking/model/clinic_model.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';

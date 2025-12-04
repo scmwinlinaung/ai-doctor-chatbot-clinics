@@ -43,10 +43,10 @@ class AuthCubit extends Cubit<AuthState> {
         'password': hashPassword,
       });
       final dynamic data = response.data!;
-      final userId = data['clinic_id'] as String;
+      final clinicId = data['clinic_id'] as String;
       final token = data['token'] as String;
       await _tokenStorageService.saveToken(token);
-      await _tokenStorageService.saveUserId(userId);
+      await _tokenStorageService.saveClinicId(clinicId);
       emit(AuthState.authenticated(token));
     } on DioException catch (e) {
       String errorMessage = 'An error occurred';
@@ -100,10 +100,10 @@ class AuthCubit extends Cubit<AuthState> {
         },
       );
       final dynamic data = response.data;
-      final userId = data['clinic_id'] as String;
+      final clinicId = data['clinic_id'] as String;
       final token = data['token'] as String;
       await _tokenStorageService.saveToken(token);
-      await _tokenStorageService.saveUserId(userId);
+      await _tokenStorageService.saveClinicId(clinicId);
 
       emit(AuthState.authenticated(token));
     } catch (e) {

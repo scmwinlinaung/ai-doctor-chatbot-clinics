@@ -1,3 +1,4 @@
+import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/features/home/cubit/language_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +8,6 @@ import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/core/widgets/gradient_background.dart';
 import 'package:clinics/core/widgets/loading_overlay.dart';
 import 'package:clinics/features/auth/cubit/auth_cubit.dart';
-import 'package:clinics/features/auth/cubit/user_cubit.dart';
 import 'package:clinics/features/auth/services/token_storage_service.dart';
 import 'package:clinics/features/theme/cubit/theme_cubit.dart';
 
@@ -22,15 +22,15 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    fetchUser();
+    fetchClinic();
     // Fetch user data when the screen loads
   }
 
-  Future<void> fetchUser() async {
+  Future<void> fetchClinic() async {
     final TokenStorageService tokenStorageService = TokenStorageService();
-    final userId = await tokenStorageService.getUserId();
+    final clinicId = await tokenStorageService.getClinicId();
     if (mounted) {
-      context.read<UserCubit>().fetchUser(userId!);
+      context.read<ClinicCubit>().getAClinicByID(clinicId!);
     }
   }
 
@@ -113,7 +113,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'User Profile',
+                      'Clinic Profile',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -139,29 +139,29 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             height: 0.2,
           ),
           const SizedBox(height: 16),
-          BlocBuilder<UserCubit, UserState>(
+          BlocBuilder<ClinicCubit, ClinicState>(
             builder: (context, state) {
-              if (state is UserLoading) {
+              if (state is ClinicLoading) {
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20.0),
                     child: LoadingWidget(),
                   ),
                 );
-              } else if (state is UserLoaded) {
-                final user = state.user;
+              } else if (state is ClinicLoaded) {
+                final clinic = state.clinics;
                 return Column(
                   children: [
-                    _buildInfoRow('Username', user.username),
-                    _buildInfoRow('Phone Number', user.phoneno),
-                    _buildInfoRow('Role', user.role.toUpperCase()),
+                    _buildInfoRow('Clinic ', clinic.title ?? ""),
+                    _buildInfoRow('City', clinic.city ?? ""),
+                    _buildInfoRow('Region', clinic.region ?? ""),
                     _buildInfoRow(
                       'Member Since',
-                      _formatDate(user.createdAt ?? DateTime.now()),
+                      _formatDate(DateTime.parse(clinic.createdAt ?? "")),
                     ),
                   ],
                 );
-              } else if (state is UserError) {
+              } else if (state is ClinicError) {
                 return Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
@@ -191,9 +191,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                       const SizedBox(height: 12),
                       ElevatedButton(
                         onPressed: () {
-                          context.read<UserCubit>().fetchUser(
-                                '68d017f2239675addec4af93',
-                              );
+                          fetchClinic();
                         },
                         child: const Text('Retry'),
                       ),

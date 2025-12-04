@@ -35,6 +35,7 @@ class HealthGuideApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (context) => getIt<ClinicCubit>()),
         BlocProvider(create: (context) => getIt<LanguageCubit>()),
         BlocProvider(create: (context) => getIt<ThemeCubit>()),
         BlocProvider(create: (context) => getIt<UserCubit>()),
@@ -48,7 +49,6 @@ class HealthGuideApp extends StatelessWidget {
           create: (context) => GetIt.instance<RegionCubit>()..fetchRegions(),
         ),
         BlocProvider(create: (context) => GetIt.instance<BookingCubit>()),
-        BlocProvider(create: (context) => GetIt.instance<ClinicCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeData>(
         builder: (context, theme) {
