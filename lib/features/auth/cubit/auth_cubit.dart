@@ -32,21 +32,50 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> login(String username, String password) async {
+  Future<void> login(String phoneno, String password) async {
     emit(const AuthState.loading());
+
     try {
-      final hashPassword = Cryptography().hashStringWithSha512(password);
-      final Response response = await DioClient.instance.post(
-        ApiRoute.login,
-        data: {'username': username, 'password': hashPassword},
-      );
-      final dynamic data = response.data;
+      final hashPassword = Cryptography().hashStringWithSha512(password.trim());
+      final Response response =
+          await DioClient.instance.post(ApiRoute.login, data: {
+        'username': phoneno.trim(),
+        'password': hashPassword,
+      });
+      final dynamic data = response.data!;
+      final userId = data['clinic_id'] as String;
       final token = data['token'] as String;
       await _tokenStorageService.saveToken(token);
-
+      await _tokenStorageService.saveUserId(userId);
       emit(AuthState.authenticated(token));
+    } on DioException catch (e) {
+      String errorMessage = 'An error occurred';
+      if (e.response != null) {
+        // Try different possible error message fields
+        final responseData = e.response?.data;
+        if (responseData is Map<String, dynamic>) {
+          errorMessage = responseData['msg'] ??
+              responseData['message'] ??
+              responseData['error'] ??
+              responseData['error_description'] ??
+              'Server error';
+        } else {
+          errorMessage = responseData?.toString() ?? 'Server error';
+        }
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage =
+            'Connection timeout. Please check your internet connection.';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = 'Request timeout. Please try again.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage =
+            'Connection error. Please check your internet connection.';
+      }
+      emit(AuthState.unauthenticated(errorMessage));
     } catch (e) {
-      emit(AuthState.unauthenticated(e.toString()));
+      final errorMessage =
+          e.toString().isEmpty ? 'An unexpected error occurred' : e.toString();
+      emit(AuthState.unauthenticated(errorMessage));
     }
   }
 
@@ -59,26 +88,25 @@ class AuthCubit extends Cubit<AuthState> {
   ) async {
     emit(const AuthState.loading());
     try {
-      final hashPassword = Cryptography().hashStringWithSha512(password);
+      final hashPassword = Cryptography().hashStringWithSha512(password.trim());
       final Response response = await DioClient.instance.post(
         ApiRoute.register,
         data: {
-          'username': username,
-          'phoneno': phoneno,
+          'username': username.trim(),
+          'phoneno': phoneno.trim(),
           'password': hashPassword,
-          'region': region,
-          'city': city,
+          'region': region.trim(),
+          'city': city.trim(),
         },
       );
       final dynamic data = response.data;
-      final userId = data['userId'] as String;
+      final userId = data['clinic_id'] as String;
       final token = data['token'] as String;
       await _tokenStorageService.saveToken(token);
       await _tokenStorageService.saveUserId(userId);
 
       emit(AuthState.authenticated(token));
     } catch (e) {
-      print(e.toString());
       emit(AuthState.unauthenticated(e.toString()));
     }
   }
@@ -87,11 +115,11 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthState.loading());
     try {
       Map<String, dynamic> queryParameters = {};
-      queryParameters['phoneno'] = phoneno;
+      queryParameters['phoneno'] = phoneno.trim();
       final Response response = await DioClient.instance.put(
         ApiRoute.updatePassword,
         queryParameters: queryParameters,
-        data: {'password': newPassword},
+        data: {'password': newPassword.trim()},
       );
       if (response.statusCode == 200) {
         emit(const AuthState.succss('Update Password Successfully'));
