@@ -912,7 +912,10 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
       initialTime: TimeOfDay.now(),
     );
     if (picked != null && mounted) {
-      _timeController.text = picked.format(context);
+      // Format time as HH:mm format which is more standard for APIs
+      final hour = picked.hour.toString().padLeft(2, '0');
+      final minute = picked.minute.toString().padLeft(2, '0');
+      _timeController.text = "$hour:$minute";
     }
   }
 
@@ -1184,7 +1187,10 @@ class _BookAgainModalState extends State<_BookAgainModal> {
       initialTime: TimeOfDay.now(),
     );
     if (picked != null && mounted) {
-      _timeController.text = picked.format(context);
+      // Format time as HH:mm format which is more standard for APIs
+      final hour = picked.hour.toString().padLeft(2, '0');
+      final minute = picked.minute.toString().padLeft(2, '0');
+      _timeController.text = "$hour:$minute";
     }
   }
 
