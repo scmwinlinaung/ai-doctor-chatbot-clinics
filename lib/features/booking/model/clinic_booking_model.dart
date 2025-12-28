@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'clinic_booking_model.freezed.dart';
 part 'clinic_booking_model.g.dart';
 
-enum BookingStatus { booking, confirmed }
+enum BookingStatus { booking, confirmed, expire }
 
 @freezed
 class ClinicBookingModel with _$ClinicBookingModel {

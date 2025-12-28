@@ -17,7 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Enum to manage the current view state for the toggle buttons
-enum BookingView { booking, confirmed }
+enum BookingView { booking, confirmed, expire }
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
@@ -212,10 +212,22 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                           // Filter the full list locally based on the selected view
                           final displayedBookings =
                               state.bookings.where((booking) {
+                            final isExpired = _isBookingExpired(booking);
+
                             if (_currentView == BookingView.booking) {
+                              // Show pending bookings that are not expired
                               return booking.status == BookingStatus.booking;
+                            } else if (_currentView == BookingView.confirmed) {
+                              // Show confirmed bookings that are NOT expired
+                              return booking.status == BookingStatus.confirmed &&
+                                  !isExpired;
                             } else {
-                              return booking.status == BookingStatus.confirmed;
+                              // Show in Expire tab if:
+                              // 1. Status is already expire, OR
+                              // 2. Status is confirmed but the confirmedDate is in the past
+                              return booking.status == BookingStatus.expire ||
+                                  (booking.status == BookingStatus.confirmed &&
+                                      isExpired);
                             }
                           }).toList();
 
@@ -234,7 +246,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                                     // Show a dynamic message based on the view
                                     _currentView == BookingView.booking
                                         ? 'No pending bookings found'
-                                        : 'No confirmed bookings found',
+                                        : _currentView == BookingView.confirmed
+                                            ? 'No confirmed bookings found'
+                                            : 'No expired bookings found',
                                     style: theme.textTheme.bodyLarge
                                         ?.copyWith(color: Colors.grey),
                                   ),
@@ -316,7 +330,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  // Widget for the "Booking" / "Confirm" toggle buttons
+  // Widget for the "Booking" / "Confirm" / "Expire" toggle buttons
   Widget _buildToggleButtons(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -352,6 +366,23 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             onPressed: () {
               setState(() {
                 _currentView = BookingView.confirmed;
+              });
+            }, // Already selected, do nothing
+          )),
+          const SizedBox(width: 12),
+          Expanded(
+              child: CustomButton(
+            borderColor: Colors.grey,
+            color: _currentView == BookingView.expire
+                ? Theme.of(context).primaryColor
+                : Colors.transparent,
+            textColor: _currentView == BookingView.expire
+                ? Colors.white
+                : Colors.black,
+            text: 'Expire',
+            onPressed: () {
+              setState(() {
+                _currentView = BookingView.expire;
               });
             }, // Already selected, do nothing
           )),
@@ -473,6 +504,48 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                   ),
                 ],
               ),
+            ]
+            // Show buttons for expired bookings
+            else if (booking.status == BookingStatus.expire) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        'Booking Expired',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _bookAgain(context, booking),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Book Again'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
@@ -491,6 +564,28 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
       return now.year == yesterdayConfirmed.year &&
           now.month == yesterdayConfirmed.month &&
           now.day == yesterdayConfirmed.day;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Helper method to check if a booking's confirmedDate is expired (less than today)
+  bool _isBookingExpired(ClinicBookingModel booking) {
+    if (booking.confirmedDate == null || booking.confirmedDate!.isEmpty) {
+      return false;
+    }
+
+    try {
+      final confirmedDate = DateTime.parse(booking.confirmedDate!);
+      final now = DateTime.now();
+
+      // Normalize both dates to midnight for accurate comparison
+      final confirmedDateNormalized =
+          DateTime(confirmedDate.year, confirmedDate.month, confirmedDate.day);
+      final nowNormalized = DateTime(now.year, now.month, now.day);
+
+      // Return true if confirmedDate is before today
+      return confirmedDateNormalized.isBefore(nowNormalized);
     } catch (e) {
       return false;
     }
@@ -537,7 +632,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  // Helper widget for the status chip (Pending/Confirmed)
+  // Helper widget for the status chip (Pending/Confirmed/Expired)
   Widget _buildStatusChip(BookingStatus? status) {
     Color color;
     String text;
@@ -550,6 +645,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
       case BookingStatus.confirmed:
         color = Colors.green;
         text = 'Confirmed';
+        break;
+      case BookingStatus.expire:
+        color = Colors.red;
+        text = 'Expired';
         break;
       default:
         color = Colors.grey;
@@ -653,7 +752,9 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
     _selectedStatus = widget.initialFilters.status ??
         (widget.currentView == BookingView.booking
             ? BookingStatus.booking
-            : BookingStatus.confirmed);
+            : widget.currentView == BookingView.confirmed
+                ? BookingStatus.confirmed
+                : BookingStatus.expire);
 
     _animationController = AnimationController(
       vsync: this,
