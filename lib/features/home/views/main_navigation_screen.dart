@@ -219,7 +219,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                               return booking.status == BookingStatus.booking;
                             } else if (_currentView == BookingView.confirmed) {
                               // Show confirmed bookings that are NOT expired
-                              return booking.status == BookingStatus.confirmed &&
+                              return booking.status ==
+                                      BookingStatus.confirmed &&
                                   !isExpired;
                             } else {
                               // Show in Expire tab if:
