@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505229583194",
+    "project_id": "medif-notifications",
+    "storage_bucket": "medif-notifications.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505229583194:android:3b320af81e16b045594963",
+        "android_client_info": {
+          "package_name": "com.HealthGuideClinic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-tYIYDLPVayQmEDA-ngYHOcX_uQ5p83U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,9 +1,11 @@
+import 'package:clinics/core/services/notification_api_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:clinics/core/api/dio_client.dart';
 import 'package:clinics/core/config/api_route.dart';
 import 'package:clinics/core/util/cryptography.dart';
+import 'package:clinics/core/services/notification_service.dart';
 import 'package:clinics/features/auth/services/token_storage_service.dart';
 import 'package:injectable/injectable.dart';
 
@@ -13,7 +15,8 @@ part 'auth_cubit.freezed.dart';
 @injectable
 class AuthCubit extends Cubit<AuthState> {
   final TokenStorageService _tokenStorageService;
-
+  final NotificationApiService _notificationApiService =
+      NotificationApiService();
   AuthCubit(this._tokenStorageService) : super(const AuthState.initial());
 
   Future<void> checkAuthStatus() async {
@@ -47,6 +50,19 @@ class AuthCubit extends Cubit<AuthState> {
       final token = data['token'] as String;
       await _tokenStorageService.saveToken(token);
       await _tokenStorageService.saveClinicId(clinicId);
+
+      // Update FCM token on server after successful login
+      final notificationService = NotificationService();
+      final fcmToken = notificationService.fcmToken;
+      print('FCM Token: $fcmToken');
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        try {
+          await _notificationApiService.updateFcmToken(clinicId, fcmToken);
+        } catch (e) {
+          // Log error but don't fail login if FCM token update fails
+          print('Error updating FCM token: $e');
+        }
+      }
       emit(AuthState.authenticated(token));
     } on DioException catch (e) {
       String errorMessage = 'An error occurred';
@@ -104,6 +120,19 @@ class AuthCubit extends Cubit<AuthState> {
       final token = data['token'] as String;
       await _tokenStorageService.saveToken(token);
       await _tokenStorageService.saveClinicId(clinicId);
+
+      // Update FCM token on server after successful login
+      final notificationService = NotificationService();
+      final fcmToken = notificationService.fcmToken;
+
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        try {
+          await _notificationApiService.updateFcmToken(clinicId, fcmToken);
+        } catch (e) {
+          // Log error but don't fail login if FCM token update fails
+          print('Error updating FCM token: $e');
+        }
+      }
 
       emit(AuthState.authenticated(token));
     } catch (e) {

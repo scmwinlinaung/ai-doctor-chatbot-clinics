@@ -5,6 +5,7 @@ import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/features/home/cubit/city_cubit.dart';
 import 'package:clinics/features/home/cubit/language_cubit.dart';
 import 'package:clinics/features/home/cubit/region_cubit.dart';
+import 'package:clinics/core/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -15,12 +16,38 @@ import 'package:clinics/features/auth/cubit/user_cubit.dart';
 import 'package:clinics/features/auth/cubit/auth_cubit.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initHiveData();
+
+  // Initialize Firebase
+  await Firebase.initializeApp();
+
+  // Initialize notifications without requesting permission yet
+  await _initNotifications();
   await configureDependencies();
   runApp(const HealthGuideApp());
+}
+
+/// Initialize Firebase and push notifications
+/// Note: We don't request permission here to avoid iOS showing dialog too early
+Future<void> _initNotifications() async {
+  try {
+    debugPrint('========================================');
+    debugPrint('_initNotifications() called');
+    debugPrint('========================================');
+    // Initialize without requesting permission - we'll request it later after UI shows
+    await NotificationService().initialize(requestPermission: true);
+    debugPrint(
+        'Notification service initialized (permission not requested yet)');
+  } catch (e, stackTrace) {
+    debugPrint('========================================');
+    debugPrint('Error initializing notifications: $e');
+    debugPrint('Stack trace: $stackTrace');
+    debugPrint('========================================');
+  }
 }
 
 Future<void> _initHiveData() async {
