@@ -7,4 +7,5 @@ class ApiRoute {
   static const String users = "/users";
   static const String conversation = "/conversation";
   static const String advertisement = "/advertisements";
+  static const String clinics = "/clinics";
 }

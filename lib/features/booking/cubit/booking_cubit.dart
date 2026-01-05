@@ -150,14 +150,43 @@ class BookingCubit extends Cubit<BookingState> {
   //   }
   // }
 
-  Future<void> cancelBooking(String bookingId) async {
+  Future<void> cancelBooking(String userId) async {
     try {
       emit(const BookingState.loading());
-      // TODO: Implement cancel booking API call
-      // For now, we'll just refetch the bookings
-      await fetchClinicBooking();
+      final status = await _bookingService.cancelUserBookings(userId);
+      if (status == 200) {
+        emit(const BookingState.success("All bookings cancelled successfully"));
+        await fetchClinicBooking();
+      } else if (status == 403) {
+        emit(const BookingState.error("Access denied"));
+      } else if (status == 404) {
+        emit(const BookingState.error("User not found"));
+      } else {
+        emit(const BookingState.error("Failed to cancel bookings"));
+      }
+    } on DioException catch (e) {
+      String errorMessage = 'Failed to cancel bookings';
+
+      if (e.response != null) {
+        errorMessage = e.response?.data['message'] ?? 'Server error';
+        if (e.response?.statusCode == 403) {
+          errorMessage = 'Access denied';
+        } else if (e.response?.statusCode == 404) {
+          errorMessage = 'User not found';
+        }
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage =
+            'Connection timeout. Please check your internet connection.';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = 'Request timeout. Please try again.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage =
+            'Connection error. Please check your internet connection.';
+      }
+
+      emit(BookingState.error(errorMessage));
     } catch (e) {
-      emit(BookingState.error('Failed to cancel booking: ${e.toString()}'));
+      emit(BookingState.error('Failed to cancel bookings: ${e.toString()}'));
     }
   }
 

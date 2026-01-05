@@ -1,4 +1,5 @@
 import 'package:clinics/core/api/dio_client.dart';
+import 'package:clinics/core/config/api_route.dart';
 import 'package:dio/dio.dart';
 
 class NotificationApiService {
@@ -6,7 +7,7 @@ class NotificationApiService {
   Future<bool> updateFcmToken(String clinicId, String fcmToken) async {
     try {
       final Response response = await DioClient.instance.patch(
-        '/clinics/$clinicId/fcm-token',
+        '${ApiRoute.clinics}/$clinicId/fcm-token',
         data: {
           'fcmToken': fcmToken,
         },

@@ -73,4 +73,9 @@ class BookingService {
     final response = await _dio.patch('/bookings/$bookingId/pay');
     return response.statusCode!;
   }
+
+  Future<int> cancelUserBookings(String userId) async {
+    final response = await _dio.put('/bookings/user/$userId/cancel');
+    return response.statusCode!;
+  }
 }

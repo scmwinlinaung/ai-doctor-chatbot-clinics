@@ -1,5 +1,6 @@
 import 'package:clinics/core/services/notification_api_service.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:clinics/core/api/dio_client.dart';
@@ -53,7 +54,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       // Update FCM token on server after successful login
       final notificationService = NotificationService();
-      final fcmToken = notificationService.fcmToken;
+      final fcmToken = await notificationService.getFcmToken();
       print('FCM Token: $fcmToken');
       if (fcmToken != null && fcmToken.isNotEmpty) {
         try {
@@ -123,7 +124,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       // Update FCM token on server after successful login
       final notificationService = NotificationService();
-      final fcmToken = notificationService.fcmToken;
+      final fcmToken = await notificationService.getFcmToken();
 
       if (fcmToken != null && fcmToken.isNotEmpty) {
         try {

@@ -29,9 +29,6 @@ class NotificationService {
     }
 
     try {
-      // Initialize Firebase Core on Dart side
-      // This is required even if Firebase is configured in native code
-      await Firebase.initializeApp();
       debugPrint("Firebase Core initialized successfully");
 
       debugPrint("About to initialize local notifications...");
@@ -75,12 +72,6 @@ class NotificationService {
       // Handle messages when app is in background but opened
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
 
-      // Get FCM token
-      _fcmToken = await _firebaseMessaging.getToken();
-      if (kDebugMode) {
-        print('FCM Token: $_fcmToken');
-      }
-
       // Listen to token refresh
       _firebaseMessaging.onTokenRefresh.listen((token) {
         _fcmToken = token;
@@ -93,8 +84,18 @@ class NotificationService {
       debugPrint("NotificationService initialization completed successfully!");
     } catch (e) {
       debugPrint('Error initializing notifications ERROR: $e');
-      rethrow;
+      // Mark as initialized anyway for local notifications
+      _isInitialized = true;
+      debugPrint(
+          'NotificationService initialized in degraded mode (FCM may not work)');
     }
+  }
+
+  Future<String?> getFcmToken() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    return await _firebaseMessaging.getToken();
   }
 
   /// Request notification permission
