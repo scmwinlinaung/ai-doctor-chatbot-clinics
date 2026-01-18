@@ -95,7 +95,35 @@ class NotificationService {
     if (!_isInitialized) {
       await initialize();
     }
-    return await _firebaseMessaging.getToken();
+
+    try {
+      // Try to get the token with retries for APNS timing issues on iOS
+      String? token = await _firebaseMessaging.getToken();
+
+      // If token is null and we're on iOS, wait a bit and retry
+      if (token == null || token.isEmpty) {
+        if (kDebugMode) {
+          print('FCM token not available yet, retrying...');
+        }
+        // Wait for APNS token to be set (iOS specific)
+        await Future.delayed(const Duration(seconds: 2));
+        token = await _firebaseMessaging.getToken();
+      }
+
+      if (token != null && token.isNotEmpty) {
+        _fcmToken = token;
+        if (kDebugMode) {
+          print('FCM Token retrieved successfully: $token');
+        }
+      }
+
+      return token;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting FCM token: $e');
+      }
+      return null;
+    }
   }
 
   /// Request notification permission

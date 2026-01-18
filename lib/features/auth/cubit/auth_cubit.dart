@@ -29,7 +29,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (token != null && token.isNotEmpty) {
         emit(AuthState.authenticated(token));
       } else {
-        emit(const AuthState.unauthenticated("Token Expired"));
+        emit(const AuthState.unauthenticated(""));
       }
     } catch (e) {
       emit(AuthState.unauthenticated(e.toString()));
@@ -41,6 +41,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     try {
       final hashPassword = Cryptography().hashStringWithSha512(password.trim());
+   
       final Response response =
           await DioClient.instance.post(ApiRoute.login, data: {
         'username': phoneno.trim(),
@@ -57,12 +58,7 @@ class AuthCubit extends Cubit<AuthState> {
       final fcmToken = await notificationService.getFcmToken();
       print('FCM Token: $fcmToken');
       if (fcmToken != null && fcmToken.isNotEmpty) {
-        try {
           await _notificationApiService.updateFcmToken(clinicId, fcmToken);
-        } catch (e) {
-          // Log error but don't fail login if FCM token update fails
-          print('Error updating FCM token: $e');
-        }
       }
       emit(AuthState.authenticated(token));
     } on DioException catch (e) {
