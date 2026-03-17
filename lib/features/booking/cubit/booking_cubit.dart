@@ -193,4 +193,14 @@ class BookingCubit extends Cubit<BookingState> {
   void clearBookings() {
     emit(const BookingState.initial());
   }
+
+  // Mark booking as read - silent operation without emitting state
+  Future<void> markBookingAsRead(String bookingId) async {
+    try {
+      await _bookingService.markBookingAsRead(bookingId);
+    } catch (e) {
+      // Silent fail - marking as read is not critical functionality
+      // You can optionally log this error for debugging
+    }
+  }
 }

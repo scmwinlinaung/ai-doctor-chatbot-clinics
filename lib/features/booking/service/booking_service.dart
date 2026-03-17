@@ -37,6 +37,7 @@ class BookingService {
     }
     final response =
         await _dio.get('/clinics/bookings', queryParameters: queryParams);
+    print("BOOKINDG DATA ${response.data}");
     final booking = (response.data as List<dynamic>)
         .map(
             (item) => ClinicBookingModel.fromJson(item as Map<String, dynamic>))
@@ -76,6 +77,11 @@ class BookingService {
 
   Future<int> cancelUserBookings(String userId) async {
     final response = await _dio.put('/bookings/user/$userId/cancel');
+    return response.statusCode!;
+  }
+
+  Future<int> markBookingAsRead(String bookingId) async {
+    final response = await _dio.put('/bookings/$bookingId/read');
     return response.statusCode!;
   }
 }

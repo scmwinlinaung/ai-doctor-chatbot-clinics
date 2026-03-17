@@ -8,18 +8,18 @@ enum BookingStatus { booking, confirmed, expire }
 
 @freezed
 class ClinicBookingModel with _$ClinicBookingModel {
-  const factory ClinicBookingModel({
-    @JsonKey(name: '_id') String? id,
-    String? clinic, // This is the clinic ID
-    UserModel? user,
-    BookingStatus? status,
-    bool? paid,
-    String? confirmedDate,
-    String? time,
-    String? doctorName,
-    String? date,
-    String? createdAt,
-  }) = _ClinicBookingModel;
+  const factory ClinicBookingModel(
+      {@JsonKey(name: '_id') String? id,
+      String? clinic, // This is the clinic ID
+      UserModel? user,
+      BookingStatus? status,
+      bool? paid,
+      String? confirmedDate,
+      String? time,
+      String? doctorName,
+      String? date,
+      String? createdAt,
+      bool? isReadByClinic}) = _ClinicBookingModel;
 
   factory ClinicBookingModel.fromJson(Map<String, dynamic> json) =>
       _$ClinicBookingModelFromJson(json);

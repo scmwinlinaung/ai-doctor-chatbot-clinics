@@ -15,6 +15,8 @@ import 'package:clinics/core/util/date_util.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:clinics/features/booking/widgets/booking_visibility_detector.dart';
+import 'package:clinics/features/booking/widgets/read_status_badge.dart';
 
 // Enum to manage the current view state for the toggle buttons
 enum BookingView { booking, confirmed, expire }
@@ -395,160 +397,172 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
   // Widget to build a single booking card in the list
   Widget _buildBookingCard(
       BuildContext context, ClinicBookingModel booking, ThemeData theme) {
-    return Card(
-      margin: const EdgeInsets.only(top: 16.0),
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Booking #${booking.id?.substring(0, 8) ?? 'N/A'}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+    return BookingVisibilityDetector(
+      bookingId: booking.id ?? '',
+      isRead: booking.isReadByClinic ?? false,
+      onVisible: (bookingId) async {
+        await context.read<BookingCubit>().markBookingAsRead(bookingId);
+      },
+      child: Card(
+        margin: const EdgeInsets.only(top: 16.0),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Booking #${booking.id?.substring(0, 8) ?? 'N/A'}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  _buildStatusChip(booking.status),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Read/Unread status badge
+              ReadStatusBadge(isRead: booking.isReadByClinic ?? true),
+              const SizedBox(height: 12),
+              if (booking.user != null) ...[
+                _buildInfoRow(
+                    'Patient', booking.user?.username ?? 'N/A', theme),
+                InkWell(
+                  onTap: () => _launchPhoneDialer(booking.user!.phoneno),
+                  child: _buildInfoRow(
+                    'Phone',
+                    booking.user?.phoneno ?? 'N/A',
+                    theme,
+                    isLink: true,
+                  ),
                 ),
-                _buildStatusChip(booking.status),
               ],
-            ),
-            const SizedBox(height: 12),
-            if (booking.user != null) ...[
-              _buildInfoRow('Patient', booking.user?.username ?? 'N/A', theme),
-              InkWell(
-                onTap: () => _launchPhoneDialer(booking.user!.phoneno),
-                child: _buildInfoRow(
-                  'Phone',
-                  booking.user?.phoneno ?? 'N/A',
-                  theme,
-                  isLink: true,
-                ),
-              ),
-            ],
-            // Conditionally show doctor and date for confirmed bookings
-            if (booking.doctorName != null)
+              // Conditionally show doctor and date for confirmed bookings
+              if (booking.doctorName != null)
+                _buildInfoRow(
+                    'Doctor Name', booking.doctorName.toString(), theme),
+              if (booking.confirmedDate != null)
+                _buildInfoRow(
+                    'Confirmed Date',
+                    "${DateUtil.formatStringToDateOnly(booking.confirmedDate.toString())} ${booking.time!}",
+                    theme),
               _buildInfoRow(
-                  'Doctor Name', booking.doctorName.toString(), theme),
-            if (booking.confirmedDate != null)
-              _buildInfoRow(
-                  'Confirmed Date',
-                  "${DateUtil.formatStringToDateOnly(booking.confirmedDate.toString())} ${booking.time!}",
-                  theme),
-            _buildInfoRow(
-                'Booking Status', booking.status!.name.toString(), theme),
+                  'Booking Status', booking.status!.name.toString(), theme),
 
-            if (booking.createdAt != null)
-              _buildInfoRow(
-                  'Created',
-                  DateUtil.formatStringToLocalDateTime(booking.createdAt!),
-                  theme),
-            const SizedBox(height: 16),
+              if (booking.createdAt != null)
+                _buildInfoRow(
+                    'Created',
+                    DateUtil.formatStringToLocalDateTime(booking.createdAt!),
+                    theme),
+              const SizedBox(height: 16),
 
-            // Show "Confirm" button only for pending bookings
-            if (booking.status == BookingStatus.booking) ...[
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  text: 'Confirm',
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () =>
-                      _confirmBooking(context, booking.id!, booking.clinic!),
+              // Show "Confirm" button only for pending bookings
+              if (booking.status == BookingStatus.booking) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    text: 'Confirm',
+                    color: Theme.of(context).primaryColor,
+                    onPressed: () =>
+                        _confirmBooking(context, booking.id!, booking.clinic!),
+                  ),
                 ),
-              ),
-            ]
-            // Show buttons for confirmed bookings
-            else if (booking.status == BookingStatus.confirmed) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border:
-                            Border.all(color: Colors.green.withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        'Booking Confirmed',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 44,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _bookAgain(context, booking),
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Book Again'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
+              ]
+              // Show buttons for confirmed bookings
+              else if (booking.status == BookingStatus.confirmed) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: Colors.green.withOpacity(0.3)),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ]
-            // Show buttons for expired bookings
-            else if (booking.status == BookingStatus.expire) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        'Booking Expired',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          'Booking Confirmed',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 44,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _bookAgain(context, booking),
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Book Again'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 44,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _bookAgain(context, booking),
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('Book Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+              // Show buttons for expired bookings
+              else if (booking.status == BookingStatus.expire) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: Colors.red.withOpacity(0.3)),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'Booking Expired',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 44,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _bookAgain(context, booking),
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('Book Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
