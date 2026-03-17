@@ -80,8 +80,8 @@ class BookingService {
     return response.statusCode!;
   }
 
-  Future<int> markBookingAsRead(String bookingId) async {
+  Future<ClinicBookingModel> markBookingAsRead(String bookingId) async {
     final response = await _dio.put('/bookings/$bookingId/read');
-    return response.statusCode!;
+    return ClinicBookingModel.fromJson(response.data as Map<String, dynamic>);
   }
 }

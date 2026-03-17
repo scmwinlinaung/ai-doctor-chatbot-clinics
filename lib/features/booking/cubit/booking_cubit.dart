@@ -194,10 +194,25 @@ class BookingCubit extends Cubit<BookingState> {
     emit(const BookingState.initial());
   }
 
-  // Mark booking as read - silent operation without emitting state
+  // Mark booking as read - updates single booking in state without full refetch
   Future<void> markBookingAsRead(String bookingId) async {
     try {
-      await _bookingService.markBookingAsRead(bookingId);
+      final updatedBooking = await _bookingService.markBookingAsRead(bookingId);
+
+      // Update the single booking in the current state if in loaded state
+      if (state is BookingLoaded) {
+        final currentBookings = (state as BookingLoaded).bookings;
+        final updatedBookings = currentBookings.map((booking) {
+          // Replace the booking with the updated one
+          if (booking.id == bookingId) {
+            return updatedBooking;
+          }
+          return booking;
+        }).toList();
+
+        // Emit updated state with the single booking updated
+        emit(BookingState.loaded(updatedBookings));
+      }
     } catch (e) {
       // Silent fail - marking as read is not critical functionality
       // You can optionally log this error for debugging
