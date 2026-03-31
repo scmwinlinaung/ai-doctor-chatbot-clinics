@@ -21,6 +21,10 @@ import 'package:clinics/features/home/cubit/advertisement_cubit.dart' as _i745;
 import 'package:clinics/features/home/cubit/city_cubit.dart' as _i1045;
 import 'package:clinics/features/home/cubit/language_cubit.dart' as _i267;
 import 'package:clinics/features/home/cubit/region_cubit.dart' as _i548;
+import 'package:clinics/features/redemption/cubit/redemption_cubit.dart'
+    as _i457;
+import 'package:clinics/features/redemption/services/redemption_service.dart'
+    as _i838;
 import 'package:clinics/features/theme/cubit/theme_cubit.dart' as _i532;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -45,6 +49,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i11.BookingService>(() => _i11.BookingService());
     gh.factory<_i753.ClinicService>(() => _i753.ClinicService());
     gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
+    gh.factory<_i838.RedemptionService>(() => _i838.RedemptionService());
+    gh.factory<_i457.RedemptionCubit>(
+        () => _i457.RedemptionCubit(gh<_i838.RedemptionService>()));
     gh.factory<_i999.BookingCubit>(
         () => _i999.BookingCubit(gh<_i11.BookingService>()));
     gh.factory<_i304.AuthCubit>(

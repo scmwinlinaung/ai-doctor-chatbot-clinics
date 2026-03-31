@@ -5,6 +5,7 @@ import 'package:clinics/core/navigation/app_routes.dart';
 import 'package:clinics/features/auth/views/forget_password_screen.dart';
 import 'package:clinics/features/auth/views/login_screen.dart';
 import 'package:clinics/features/home/views/splash_screen.dart';
+import 'package:clinics/features/redemption/views/redemption_scanner_screen.dart';
 import 'package:clinics/features/subscription/views/subscription_screen.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -29,6 +30,10 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.subscription, // Use the static constant
         builder: (context, state) => const SubscriptionScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.redemptionScanner, // Redemption scanner route
+        builder: (context, state) => const RedemptionScannerScreen(),
       ),
       // GoRoute(
       //   path: AppRoutes.bookingListing, // Use the static constant

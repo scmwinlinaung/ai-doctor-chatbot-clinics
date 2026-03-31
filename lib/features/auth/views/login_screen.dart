@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Login to your health guide account.',
+                          'Login to your health guide clinics account.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,

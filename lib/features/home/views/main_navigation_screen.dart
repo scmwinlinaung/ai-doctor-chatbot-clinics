@@ -13,10 +13,12 @@ import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/core/util/date_util.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:clinics/features/booking/widgets/booking_visibility_detector.dart';
 import 'package:clinics/features/booking/widgets/read_status_badge.dart';
+import 'package:clinics/core/navigation/app_routes.dart';
 
 // Enum to manage the current view state for the toggle buttons
 enum BookingView { booking, confirmed, expire }
@@ -186,6 +188,16 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               elevation: 0,
               scrolledUnderElevation: 0,
               actions: [
+                IconButton(
+                  icon: Icon(
+                    Icons.qr_code_scanner,
+                    color: theme.primaryColor,
+                  ),
+                  onPressed: () {
+                    context.push(AppRoutes.redemptionScanner);
+                  },
+                  tooltip: 'Scan Redemption Code',
+                ),
                 IconButton(
                   icon: Icon(
                     Icons.filter_list_rounded,

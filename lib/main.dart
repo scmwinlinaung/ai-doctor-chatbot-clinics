@@ -6,6 +6,7 @@ import 'package:clinics/features/home/cubit/city_cubit.dart';
 import 'package:clinics/features/home/cubit/language_cubit.dart';
 import 'package:clinics/features/home/cubit/region_cubit.dart';
 import 'package:clinics/core/services/notification_service.dart';
+import 'package:clinics/features/redemption/cubit/redemption_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -77,6 +78,7 @@ class HealthGuideApp extends StatelessWidget {
           create: (context) => GetIt.instance<RegionCubit>()..fetchRegions(),
         ),
         BlocProvider(create: (context) => GetIt.instance<BookingCubit>()),
+        BlocProvider(create: (context) => GetIt.instance<RedemptionCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeData>(
         builder: (context, theme) {

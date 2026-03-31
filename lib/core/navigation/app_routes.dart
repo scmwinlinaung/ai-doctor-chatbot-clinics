@@ -13,4 +13,5 @@ class AppRoutes {
   static const String bookingListing = '/booking-listing';
   static const String home = '/';
   static const String forgetPassword = '/forget-password';
+  static const String redemptionScanner = '/redemption-scanner';
 }
