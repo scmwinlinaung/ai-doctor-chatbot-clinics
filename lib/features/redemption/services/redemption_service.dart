@@ -19,7 +19,8 @@ class RedemptionService {
           response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        throw Exception('Invalid or already used code / Reward or user not found');
+        throw Exception(
+            'Invalid or already used code / Reward or user not found');
       } else if (e.response?.statusCode == 403) {
         throw Exception('Forbidden (Admin access required)');
       } else if (e.response?.statusCode == 401) {

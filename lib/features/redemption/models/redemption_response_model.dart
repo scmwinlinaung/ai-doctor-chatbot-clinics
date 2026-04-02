@@ -6,9 +6,9 @@ part 'redemption_response_model.g.dart';
 @freezed
 class RedemptionResponseModel with _$RedemptionResponseModel {
   const factory RedemptionResponseModel({
-    required String msg,
-    required String user,
-    required String reward,
+    String? msg,
+    String? user,
+    String? reward,
   }) = _RedemptionResponseModel;
 
   factory RedemptionResponseModel.fromJson(Map<String, dynamic> json) =>
