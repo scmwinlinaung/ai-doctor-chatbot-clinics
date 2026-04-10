@@ -29,7 +29,7 @@ class BookingVisibilityDetector extends StatefulWidget {
     required this.bookingId,
     required this.isRead,
     required this.onVisible,
-    this.visibilityThreshold = const Duration(seconds: 2),
+    this.visibilityThreshold = const Duration(seconds: 10),
     this.visibleFractionThreshold = 0.5,
   });
 
@@ -38,8 +38,7 @@ class BookingVisibilityDetector extends StatefulWidget {
       _BookingVisibilityDetectorState();
 }
 
-class _BookingVisibilityDetectorState
-    extends State<BookingVisibilityDetector> {
+class _BookingVisibilityDetectorState extends State<BookingVisibilityDetector> {
   Timer? _visibilityTimer;
   bool _hasBeenCalled = false;
 
