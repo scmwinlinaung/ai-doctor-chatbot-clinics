@@ -297,8 +297,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                               itemCount: displayedBookings.length,
                               itemBuilder: (context, index) {
                                 final booking = displayedBookings[index];
+                                // Use a key that includes isReadByClinic to force rebuild when it changes
                                 return _buildBookingCard(
-                                    context, booking, theme);
+                                    context, booking, theme,
+                                    key: ValueKey('${booking.id}_${booking.isReadByClinic}'));
                               },
                             ),
                           );
@@ -409,8 +411,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
 
   // Widget to build a single booking card in the list
   Widget _buildBookingCard(
-      BuildContext context, ClinicBookingModel booking, ThemeData theme) {
+      BuildContext context, ClinicBookingModel booking, ThemeData theme,
+      {Key? key}) {
     return BookingVisibilityDetector(
+      key: key,
       bookingId: booking.id ?? '',
       isRead: booking.isReadByClinic ?? false,
       onVisible: (bookingId) async {

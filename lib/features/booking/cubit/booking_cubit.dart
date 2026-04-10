@@ -199,23 +199,44 @@ class BookingCubit extends Cubit<BookingState> {
     try {
       final updatedBooking = await _bookingService.markBookingAsRead(bookingId);
 
+      // Debug: Verify the API response
+      print('Marking booking $bookingId as read. isReadByClinic: ${updatedBooking.isReadByClinic}');
+
       // Update the single booking in the current state if in loaded state
       if (state is BookingLoaded) {
         final currentBookings = (state as BookingLoaded).bookings;
-        final updatedBookings = currentBookings.map((booking) {
-          // Replace the booking with the updated one
-          if (booking.id == bookingId) {
-            return updatedBooking;
-          }
-          return booking;
-        }).toList();
+
+        // Find and debug the booking
+        final bookingIndex = currentBookings.indexWhere(
+          (booking) => booking.id != null && booking.id == bookingId,
+        );
+
+        if (bookingIndex == -1) {
+          print('Warning: Booking with ID $bookingId not found in current state');
+          return;
+        }
+
+        print('Found booking at index $bookingIndex');
+
+        // Merge the updated booking with the existing one to preserve all fields
+        final existingBooking = currentBookings[bookingIndex];
+        final mergedBooking = existingBooking.copyWith(
+          isReadByClinic: updatedBooking.isReadByClinic,
+        );
+
+        // Create a new list with the merged booking
+        final updatedBookings = [
+          for (int i = 0; i < currentBookings.length; i++)
+            if (i == bookingIndex) mergedBooking else currentBookings[i],
+        ];
 
         // Emit updated state with the single booking updated
         emit(BookingState.loaded(updatedBookings));
+        print('Booking $bookingId marked as read successfully');
       }
     } catch (e) {
-      // Silent fail - marking as read is not critical functionality
-      // You can optionally log this error for debugging
+      // Log error for debugging
+      print('Error marking booking as read: $e');
     }
   }
 }
