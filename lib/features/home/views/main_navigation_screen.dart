@@ -21,7 +21,7 @@ import 'package:clinics/features/booking/widgets/read_status_badge.dart';
 import 'package:clinics/core/navigation/app_routes.dart';
 
 // Enum to manage the current view state for the toggle buttons
-enum BookingView { booking, confirmed, expire }
+enum BookingView { booking, confirmed, unreadcancelled }
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
@@ -240,7 +240,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                               // Show in Expire tab if:
                               // 1. Status is already expire, OR
                               // 2. Status is confirmed but the confirmedDate is in the past
-                              return booking.status == BookingStatus.expire ||
+                              return booking.status ==
+                                      BookingStatus.unreadcancelled ||
                                   (booking.status == BookingStatus.confirmed &&
                                       isExpired);
                             }
@@ -345,7 +346,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  // Widget for the "Booking" / "Confirm" / "Expire" toggle buttons
+  // Widget for the "Booking" / "Confirm" / "Unreadcancelled" toggle buttons
   Widget _buildToggleButtons(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -367,7 +368,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               });
             }, // Already selected, do nothing
           )),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
               child: CustomButton(
             borderColor: Colors.grey,
@@ -384,20 +385,20 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               });
             }, // Already selected, do nothing
           )),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
               child: CustomButton(
             borderColor: Colors.grey,
-            color: _currentView == BookingView.expire
+            color: _currentView == BookingView.unreadcancelled
                 ? Theme.of(context).primaryColor
                 : Colors.transparent,
-            textColor: _currentView == BookingView.expire
+            textColor: _currentView == BookingView.unreadcancelled
                 ? Colors.white
                 : Colors.black,
-            text: 'Expire',
+            text: 'Unreadcancelled',
             onPressed: () {
               setState(() {
-                _currentView = BookingView.expire;
+                _currentView = BookingView.unreadcancelled;
               });
             }, // Already selected, do nothing
           )),
@@ -531,7 +532,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ),
               ]
               // Show buttons for expired bookings
-              else if (booking.status == BookingStatus.expire) ...[
+              else if (booking.status == BookingStatus.unreadcancelled) ...[
                 Row(
                   children: [
                     Expanded(
@@ -544,7 +545,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                               Border.all(color: Colors.red.withOpacity(0.3)),
                         ),
                         child: Text(
-                          'Booking Expired',
+                          'Booking Unreadcancelled',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: Colors.red,
@@ -659,7 +660,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  // Helper widget for the status chip (Pending/Confirmed/Expired)
+  // Helper widget for the status chip (Pending/Confirmed/Unreadcancelled)
   Widget _buildStatusChip(BookingStatus? status) {
     Color color;
     String text;
@@ -667,15 +668,15 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     switch (status) {
       case BookingStatus.booking:
         color = Colors.orange;
-        text = 'Pending';
+        text = 'စောင့်ဆိုင်းဆဲ';
         break;
       case BookingStatus.confirmed:
         color = Colors.green;
-        text = 'Confirmed';
+        text = 'အောင်မြင်ပြီး';
         break;
-      case BookingStatus.expire:
+      case BookingStatus.unreadcancelled:
         color = Colors.red;
-        text = 'Expired';
+        text = 'မအောင်မြင်ပါ';
         break;
       default:
         color = Colors.grey;
@@ -781,7 +782,7 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
             ? BookingStatus.booking
             : widget.currentView == BookingView.confirmed
                 ? BookingStatus.confirmed
-                : BookingStatus.expire);
+                : BookingStatus.unreadcancelled);
 
     _animationController = AnimationController(
       vsync: this,

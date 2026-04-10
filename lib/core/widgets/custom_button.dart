@@ -28,7 +28,7 @@ class CustomButton extends StatelessWidget {
         // Provide visual feedback when the button is disabled (during loading)
         disabledBackgroundColor: color.withOpacity(0.7),
 
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
