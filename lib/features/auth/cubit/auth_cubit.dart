@@ -41,7 +41,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     try {
       final hashPassword = Cryptography().hashStringWithSha512(password.trim());
-   
+
       final Response response =
           await DioClient.instance.post(ApiRoute.login, data: {
         'username': phoneno.trim(),
@@ -54,11 +54,15 @@ class AuthCubit extends Cubit<AuthState> {
       await _tokenStorageService.saveClinicId(clinicId);
 
       // Update FCM token on server after successful login
-      final notificationService = NotificationService();
-      final fcmToken = await notificationService.getFcmToken();
-      print('FCM Token: $fcmToken');
-      if (fcmToken != null && fcmToken.isNotEmpty) {
+      try {
+        final notificationService = NotificationService();
+        final fcmToken = await notificationService.getFcmToken();
+        print('FCM Token: $fcmToken');
+        if (fcmToken != null && fcmToken.isNotEmpty) {
           await _notificationApiService.updateFcmToken(clinicId, fcmToken);
+        }
+      } catch (e) {
+        // Silently ignore FCM token errors - login should succeed regardless
       }
       emit(AuthState.authenticated(token));
     } on DioException catch (e) {

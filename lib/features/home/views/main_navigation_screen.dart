@@ -300,7 +300,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                                 // Use a key that includes isReadByClinic to force rebuild when it changes
                                 return _buildBookingCard(
                                     context, booking, theme,
-                                    key: ValueKey('${booking.id}_${booking.isReadByClinic}'));
+                                    key: ValueKey(
+                                        '${booking.id}_${booking.isReadByClinic}'));
                               },
                             ),
                           );
@@ -363,7 +364,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             textColor: _currentView == BookingView.booking
                 ? Colors.white
                 : Colors.black,
-            text: 'Booking',
+            text: 'စောင့်ဆိုင်းဆဲ',
             onPressed: () {
               setState(() {
                 _currentView = BookingView.booking;
@@ -380,7 +381,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             textColor: _currentView == BookingView.confirmed
                 ? Colors.white
                 : Colors.black,
-            text: 'Confirm',
+            text: 'အောင်မြင်ပြီး',
             onPressed: () {
               setState(() {
                 _currentView = BookingView.confirmed;
@@ -397,7 +398,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             textColor: _currentView == BookingView.unreadcancelled
                 ? Colors.white
                 : Colors.black,
-            text: 'Unreadcancelled',
+            text: 'မအောင်မြင်ပါ',
             onPressed: () {
               setState(() {
                 _currentView = BookingView.unreadcancelled;
