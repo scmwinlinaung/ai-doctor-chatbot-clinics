@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset("assets/images/logo.jpg", fit: BoxFit.cover),
+            child: Image.asset("assets/images/logo.png", fit: BoxFit.cover),
           ),
           const Center(child: LoadingWidget()),
         ],
