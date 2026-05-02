@@ -10,7 +10,7 @@
 
     <application
         android:usesCleartextTraffic="true"
-        android:label="Clinic"
+        android:label="Smart Booking App Myanmar"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

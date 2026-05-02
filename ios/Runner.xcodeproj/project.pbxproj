@@ -14,6 +14,7 @@
 		47680B4BA3B70EED426FB3CF /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5DF64301FDBF1F574831212 /* Pods_Runner.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		77EA69D82F9B44BB00B325BC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77EA69D72F9B44BB00B325BC /* GoogleService-Info.plist */; };
+		77EA69DA2F9B48B800B325BC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77EA69D72F9B44BB00B325BC /* GoogleService-Info.plist */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -258,7 +259,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				77EA69D82F9B44BB00B325BC /* GoogleService-Info.plist in Resources */,
+				77EA69DA2F9B48B800B325BC /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -506,8 +507,8 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5358K6RM8W;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.0.8;
-				FLUTTER_BUILD_NUMBER = 9;
+				FLUTTER_BUILD_NAME = 1.0.9;
+				FLUTTER_BUILD_NUMBER = 10;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Health Guide Clinic";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -694,8 +695,8 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5358K6RM8W;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.0.8;
-				FLUTTER_BUILD_NUMBER = 9;
+				FLUTTER_BUILD_NAME = 1.0.9;
+				FLUTTER_BUILD_NUMBER = 10;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Health Guide Clinic";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -722,8 +723,8 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5358K6RM8W;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.0.8;
-				FLUTTER_BUILD_NUMBER = 9;
+				FLUTTER_BUILD_NAME = 1.0.9;
+				FLUTTER_BUILD_NUMBER = 10;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Health Guide Clinic";
 				LD_RUNPATH_SEARCH_PATHS = (
