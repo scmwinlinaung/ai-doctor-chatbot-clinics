@@ -1,4 +1,5 @@
 import 'package:clinics/core/widgets/custom_dropdown_button_form_field.dart';
+import 'package:clinics/features/auth/services/token_storage_service.dart';
 import 'package:clinics/features/home/views/user_settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,7 +22,7 @@ import 'package:clinics/features/booking/widgets/read_status_badge.dart';
 import 'package:clinics/core/navigation/app_routes.dart';
 
 // Enum to manage the current view state for the toggle buttons
-enum BookingView { booking, confirmed, unreadcancelled }
+enum BookingView { booking, unconfirmed, confirmed, unreadcancelled }
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
@@ -103,14 +104,33 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
   }
 
   void _showFilterModal() async {
+    String? clinicId;
+    final state = context.read<BookingCubit>().state;
+    if (state is BookingLoaded && state.bookings.isNotEmpty) {
+      // Find the first booking that has a clinic ID to use it for fetching doctors
+      for (final booking in state.bookings) {
+        if (booking.clinic != null && booking.clinic!.isNotEmpty) {
+          clinicId = booking.clinic;
+          break;
+        }
+      }
+    }
+
     final result = await showModalBottomSheet<BookingFilters>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
-        return _FilterModalSheet(
-          initialFilters: _currentFilters,
-          currentView: _currentView,
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: BlocProvider.of<BookingCubit>(context)),
+            BlocProvider.value(value: BlocProvider.of<ClinicCubit>(context)),
+          ],
+          child: _FilterModalSheet(
+            initialFilters: _currentFilters,
+            currentView: _currentView,
+            clinicId: clinicId,
+          ),
         );
       },
     );
@@ -200,6 +220,24 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ),
                 IconButton(
                   icon: Icon(
+                    Icons.assessment_rounded,
+                    color: theme.primaryColor,
+                  ),
+                  onPressed: () async {
+                    final tokenStorage = GetIt.instance<TokenStorageService>();
+                    final clinicId = await tokenStorage.getClinicId();
+                    if (clinicId != null && context.mounted) {
+                      context.push('${AppRoutes.clinicReport}?clinicId=$clinicId');
+                    } else if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Clinic ID not found.')),
+                      );
+                    }
+                  },
+                  tooltip: 'Clinic Report',
+                ),
+                IconButton(
+                  icon: Icon(
                     Icons.filter_list_rounded,
                     color: theme.primaryColor,
                   ),
@@ -226,24 +264,19 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                           // Filter the full list locally based on the selected view
                           final displayedBookings =
                               state.bookings.where((booking) {
-                            final isExpired = _isBookingExpired(booking);
-
                             if (_currentView == BookingView.booking) {
-                              // Show pending bookings that are not expired
+                              // Show pending bookings
                               return booking.status == BookingStatus.booking;
+                            } else if (_currentView == BookingView.unconfirmed) {
+                              // Show unconfirmed bookings
+                              return booking.status == BookingStatus.unconfirmed;
                             } else if (_currentView == BookingView.confirmed) {
-                              // Show confirmed bookings that are NOT expired
-                              return booking.status ==
-                                      BookingStatus.confirmed &&
-                                  !isExpired;
+                              // Show confirmed bookings
+                              return booking.status == BookingStatus.confirmed;
                             } else {
-                              // Show in Expire tab if:
-                              // 1. Status is already expire, OR
-                              // 2. Status is confirmed but the confirmedDate is in the past
+                              // Show unreadcancelled bookings
                               return booking.status ==
-                                      BookingStatus.unreadcancelled ||
-                                  (booking.status == BookingStatus.confirmed &&
-                                      isExpired);
+                                  BookingStatus.unreadcancelled;
                             }
                           }).toList();
 
@@ -262,9 +295,11 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                                     // Show a dynamic message based on the view
                                     _currentView == BookingView.booking
                                         ? 'No pending bookings found'
-                                        : _currentView == BookingView.confirmed
-                                            ? 'No confirmed bookings found'
-                                            : 'No expired bookings found',
+                                        : _currentView == BookingView.unconfirmed
+                                            ? 'No unconfirmed bookings found'
+                                            : _currentView == BookingView.confirmed
+                                                ? 'No confirmed bookings found'
+                                                : 'No unread cancelled bookings found',
                                     style: theme.textTheme.bodyLarge
                                         ?.copyWith(color: Colors.grey),
                                   ),
@@ -349,63 +384,110 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
-  // Widget for the "Booking" / "Confirm" / "Unreadcancelled" toggle buttons
+  // Widget for the toggle buttons using a Wrap layout to avoid scrolling
   Widget _buildToggleButtons(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Column(
         children: [
-          Expanded(
-              child: CustomButton(
-            borderColor: Colors.grey,
-            color: _currentView == BookingView.booking
-                ? Theme.of(context).primaryColor
-                : Colors.transparent,
-            textColor: _currentView == BookingView.booking
-                ? Colors.white
-                : Colors.black,
-            text: 'စောင့်ဆိုင်းဆဲ',
-            onPressed: () {
-              setState(() {
-                _currentView = BookingView.booking;
-              });
-            }, // Already selected, do nothing
-          )),
-          const SizedBox(width: 10),
-          Expanded(
-              child: CustomButton(
-            borderColor: Colors.grey,
-            color: _currentView == BookingView.confirmed
-                ? Theme.of(context).primaryColor
-                : Colors.transparent,
-            textColor: _currentView == BookingView.confirmed
-                ? Colors.white
-                : Colors.black,
-            text: 'အောင်မြင်ပြီး',
-            onPressed: () {
-              setState(() {
-                _currentView = BookingView.confirmed;
-              });
-            }, // Already selected, do nothing
-          )),
-          const SizedBox(width: 10),
-          Expanded(
-              child: CustomButton(
-            borderColor: Colors.grey,
-            color: _currentView == BookingView.unreadcancelled
-                ? Theme.of(context).primaryColor
-                : Colors.transparent,
-            textColor: _currentView == BookingView.unreadcancelled
-                ? Colors.white
-                : Colors.black,
-            text: 'မအောင်မြင်ပါ',
-            onPressed: () {
-              setState(() {
-                _currentView = BookingView.unreadcancelled;
-              });
-            }, // Already selected, do nothing
-          )),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTabButton(
+                  title: 'တင်ထားသည်',
+                  view: BookingView.booking,
+                  theme: theme,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildTabButton(
+                  title: 'အတည်မပြုရသေး',
+                  view: BookingView.unconfirmed,
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTabButton(
+                  title: 'အတည်ပြု',
+                  view: BookingView.confirmed,
+                  theme: theme,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildTabButton(
+                  title: 'မဖတ်၍ပယ်ဖျက်',
+                  view: BookingView.unreadcancelled,
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton({
+    required String title,
+    required BookingView view,
+    required ThemeData theme,
+  }) {
+    final isSelected = _currentView == view;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _currentView = view;
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.primaryColor : theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: theme.primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+          border: Border.all(
+            color: isSelected ? theme.primaryColor : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isSelected
+                ? Colors.white
+                : (theme.brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 13,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -472,7 +554,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                     "${DateUtil.formatStringToDateOnly(booking.confirmedDate.toString())} ${booking.time!}",
                     theme),
               _buildInfoRow(
-                  'Booking Status', booking.status!.name.toString(), theme),
+                  'Booking Status', _getStatusText(booking.status), theme),
 
               if (booking.createdAt != null)
                 _buildInfoRow(
@@ -495,42 +577,61 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               ]
               // Show buttons for confirmed bookings
               else if (booking.status == BookingStatus.confirmed) ...[
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: Colors.green.withOpacity(0.3)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors:[Colors.green.shade300, Colors.teal.shade400],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        child: Text(
-                          'Booking Confirmed',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (Colors.green).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Booking Confirmed',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 44,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _bookAgain(context, booking),
-                        icon: const Icon(Icons.refresh, size: 18),
-                        label: const Text('Book Again'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () => _bookAgain(context, booking),
+                      icon: const Icon(Icons.refresh, size: 20),
+                      label: const Text('Book Again'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        shadowColor: Theme.of(context).primaryColor.withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ],
@@ -665,27 +766,42 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
     );
   }
 
+  // Helper to map BookingStatus to the user-requested Burmese text
+  String _getStatusText(BookingStatus? status) {
+    switch (status) {
+      case BookingStatus.booking:
+        return 'တင်ထားသည်';
+      case BookingStatus.confirmed:
+        return 'အတည်ပြု';
+      case BookingStatus.unconfirmed:
+        return 'အတည်မပြုရသေး';
+      case BookingStatus.unreadcancelled:
+        return 'မဖတ်၍ပယ်ဖျက်';
+      default:
+        return 'Unknown';
+    }
+  }
+
   // Helper widget for the status chip (Pending/Confirmed/Unreadcancelled)
   Widget _buildStatusChip(BookingStatus? status) {
     Color color;
-    String text;
+    String text = _getStatusText(status);
 
     switch (status) {
       case BookingStatus.booking:
         color = Colors.orange;
-        text = 'စောင့်ဆိုင်းဆဲ';
         break;
       case BookingStatus.confirmed:
         color = Colors.green;
-        text = 'အောင်မြင်ပြီး';
+        break;
+      case BookingStatus.unconfirmed:
+        color = Colors.orangeAccent;
         break;
       case BookingStatus.unreadcancelled:
         color = Colors.red;
-        text = 'မအောင်မြင်ပါ';
         break;
       default:
         color = Colors.grey;
-        text = 'Unknown';
     }
 
     return Container(
@@ -748,9 +864,11 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
 class _FilterModalSheet extends StatefulWidget {
   final BookingFilters initialFilters;
   final BookingView currentView;
+  final String? clinicId;
   const _FilterModalSheet({
     required this.initialFilters,
     required this.currentView,
+    this.clinicId,
   });
 
   @override
@@ -759,12 +877,11 @@ class _FilterModalSheet extends StatefulWidget {
 
 class _FilterModalSheetState extends State<_FilterModalSheet>
     with SingleTickerProviderStateMixin {
-  late final TextEditingController _doctorController;
+  String? _selectedDoctorName;
   late final TextEditingController _usernameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _fromDateController;
   late final TextEditingController _toDateController;
-  BookingStatus? _selectedStatus;
   late final AnimationController _animationController;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
@@ -772,8 +889,10 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
   @override
   void initState() {
     super.initState();
-    _doctorController =
-        TextEditingController(text: widget.initialFilters.doctorname);
+    if (widget.clinicId != null) {
+      context.read<ClinicCubit>().getAClinicByID(widget.clinicId!);
+    }
+    _selectedDoctorName = widget.initialFilters.doctorname;
     _usernameController =
         TextEditingController(text: widget.initialFilters.username);
     _phoneController =
@@ -782,12 +901,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
         TextEditingController(text: widget.initialFilters.fromDate);
     _toDateController =
         TextEditingController(text: widget.initialFilters.toDate);
-    _selectedStatus = widget.initialFilters.status ??
-        (widget.currentView == BookingView.booking
-            ? BookingStatus.booking
-            : widget.currentView == BookingView.confirmed
-                ? BookingStatus.confirmed
-                : BookingStatus.unreadcancelled);
 
     _animationController = AnimationController(
       vsync: this,
@@ -811,7 +924,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
 
   @override
   void dispose() {
-    _doctorController.dispose();
     _usernameController.dispose();
     _phoneController.dispose();
     _fromDateController.dispose();
@@ -836,16 +948,13 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
 
   void _applyAndClose() {
     final filters = BookingFilters(
-      doctorname: _doctorController.text.trim().isEmpty
-          ? null
-          : _doctorController.text.trim(),
+      doctorname: _selectedDoctorName,
       username: _usernameController.text.trim().isEmpty
           ? null
           : _usernameController.text.trim(),
       phoneNumber: _phoneController.text.trim().isEmpty
           ? null
           : _phoneController.text.trim(),
-      status: _selectedStatus,
       fromDate: _fromDateController.text.trim().isEmpty
           ? null
           : _fromDateController.text.trim(),
@@ -903,11 +1012,46 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                   const SizedBox(height: 24),
                   // Show doctor filter only when currentView is confirmed
                   if (widget.currentView == BookingView.confirmed) ...[
-                    TextFormField(
-                      controller: _doctorController,
-                      decoration: const InputDecoration(
-                          labelText: 'Doctor',
-                          prefixIcon: Icon(Icons.person_outline)),
+                    BlocBuilder<ClinicCubit, ClinicState>(
+                      builder: (context, state) {
+                        return state.when(
+                          initial: () => const SizedBox.shrink(),
+                          loading: () => const Center(child: LoadingWidget()),
+                          error: (message) => Center(
+                            child: Text(
+                              'Error loading doctors: $message',
+                              style: TextStyle(color: theme.colorScheme.error),
+                            ),
+                          ),
+                          loaded: (clinic) {
+                            return CustomDropdownButtonFormField(
+                              labelText: 'Doctor',
+                              icon: Icons.person_outline,
+                              value: _selectedDoctorName,
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('All Doctors'),
+                                ),
+                                ...(clinic.doctors ?? []).map((DoctorModel doctor) {
+                                  return DropdownMenuItem<String>(
+                                    value: doctor.name,
+                                    child: Text(
+                                      doctor.name ?? 'Unnamed Doctor',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedDoctorName = value;
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -923,20 +1067,6 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                     decoration: const InputDecoration(
                         labelText: 'Phone Number',
                         prefixIcon: Icon(Icons.phone_outlined)),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<BookingStatus>(
-                    value: _selectedStatus,
-                    decoration: const InputDecoration(
-                        labelText: 'Status',
-                        prefixIcon: Icon(Icons.info_outline)),
-                    items: BookingStatus.values.map((status) {
-                      return DropdownMenuItem(
-                          value: status,
-                          child: Text(status.name.toUpperCase()));
-                    }).toList(),
-                    onChanged: (value) =>
-                        setState(() => _selectedStatus = value),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

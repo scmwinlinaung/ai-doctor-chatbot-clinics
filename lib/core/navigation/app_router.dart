@@ -6,7 +6,11 @@ import 'package:clinics/features/auth/views/forget_password_screen.dart';
 import 'package:clinics/features/auth/views/login_screen.dart';
 import 'package:clinics/features/home/views/splash_screen.dart';
 import 'package:clinics/features/redemption/views/redemption_scanner_screen.dart';
+import 'package:clinics/features/reports/cubit/report_cubit.dart';
+import 'package:clinics/features/reports/views/clinic_report_screen.dart';
 import 'package:clinics/features/subscription/views/subscription_screen.dart';
+import 'package:clinics/core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -34,6 +38,16 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.redemptionScanner, // Redemption scanner route
         builder: (context, state) => const RedemptionScannerScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.clinicReport,
+        builder: (context, state) {
+          final clinicId = state.uri.queryParameters['clinicId'] ?? '';
+          return BlocProvider(
+            create: (context) => getIt<ReportCubit>(),
+            child: ClinicReportScreen(clinicId: clinicId),
+          );
+        },
       ),
       // GoRoute(
       //   path: AppRoutes.bookingListing, // Use the static constant

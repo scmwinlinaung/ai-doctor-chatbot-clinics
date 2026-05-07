@@ -14,4 +14,5 @@ class AppRoutes {
   static const String home = '/';
   static const String forgetPassword = '/forget-password';
   static const String redemptionScanner = '/redemption-scanner';
+  static const String clinicReport = '/clinic-report';
 }

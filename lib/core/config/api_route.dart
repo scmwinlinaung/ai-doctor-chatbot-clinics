@@ -8,4 +8,5 @@ class ApiRoute {
   static const String conversation = "/conversation";
   static const String advertisement = "/advertisements";
   static const String clinics = "/clinics";
+  static const String reports = "/reports";
 }
