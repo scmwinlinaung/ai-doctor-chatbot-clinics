@@ -1,4 +1,4 @@
 class AuthConstant {
   static const String termsAndCondition =
-      'Disclaimer: Prominently featured on the app\'s loading screen and before the Symptom Checker:\n"This app is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider."';
+      'ယခု Health Guide (ကျန်းမာလမ်းညွှန်) app သည် ဆရာဝန် အစားထိုးရန် မဟုတ်ပဲ လူနာများ လျင်မြန်ထိရောက်သော ကုသမှုရရှိရန် နှင့် လမ်းညွှန်ပေးရန် သာ ဖြစ်ပါသည်။ မိမိ ရောဂါ အတွက် ဆရာဝန် ၏ ရောဂါ စစ်ဆေးအဖြေ ပေးခြင်း ကုသ ပေးခြင်း ကို ရ ယူရန် လို အပ်ပါ မည်။';
 }

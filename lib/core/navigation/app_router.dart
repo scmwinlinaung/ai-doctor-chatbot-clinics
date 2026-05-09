@@ -7,6 +7,8 @@ import 'package:clinics/features/auth/views/login_screen.dart';
 import 'package:clinics/features/home/views/splash_screen.dart';
 import 'package:clinics/features/redemption/views/redemption_scanner_screen.dart';
 import 'package:clinics/features/reports/cubit/report_cubit.dart';
+import 'package:clinics/features/reports/cubit/booking_report_cubit.dart';
+import 'package:clinics/features/reports/views/booking_report_screen.dart';
 import 'package:clinics/features/reports/views/clinic_report_screen.dart';
 import 'package:clinics/features/subscription/views/subscription_screen.dart';
 import 'package:clinics/core/di/injection.dart';
@@ -46,6 +48,15 @@ class AppRouter {
           return BlocProvider(
             create: (context) => getIt<ReportCubit>(),
             child: ClinicReportScreen(clinicId: clinicId),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.bookingReport,
+        builder: (context, state) {
+          return BlocProvider(
+            create: (context) => getIt<BookingReportCubit>(),
+            child: const BookingReportScreen(),
           );
         },
       ),

@@ -238,6 +238,16 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ),
                 IconButton(
                   icon: Icon(
+                    Icons.list_alt_rounded,
+                    color: theme.primaryColor,
+                  ),
+                  onPressed: () {
+                    context.push(AppRoutes.bookingReport);
+                  },
+                  tooltip: 'Booking Report',
+                ),
+                IconButton(
+                  icon: Icon(
                     Icons.filter_list_rounded,
                     color: theme.primaryColor,
                   ),

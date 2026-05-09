@@ -25,6 +25,8 @@ import 'package:clinics/features/redemption/cubit/redemption_cubit.dart'
     as _i457;
 import 'package:clinics/features/redemption/services/redemption_service.dart'
     as _i838;
+import 'package:clinics/features/reports/cubit/booking_report_cubit.dart'
+    as _i242;
 import 'package:clinics/features/reports/cubit/report_cubit.dart' as _i222;
 import 'package:clinics/features/reports/services/report_service.dart' as _i266;
 import 'package:clinics/features/theme/cubit/theme_cubit.dart' as _i532;
@@ -51,12 +53,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i267.LanguageCubit>(() => _i267.LanguageCubit());
     gh.factory<_i548.RegionCubit>(() => _i548.RegionCubit());
     gh.factory<_i838.RedemptionService>(() => _i838.RedemptionService());
-    gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
     gh.factory<_i266.ReportService>(() => _i266.ReportService());
+    gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
     gh.factory<_i457.RedemptionCubit>(
         () => _i457.RedemptionCubit(gh<_i838.RedemptionService>()));
     gh.factory<_i999.BookingCubit>(
         () => _i999.BookingCubit(gh<_i11.BookingService>()));
+    gh.factory<_i242.BookingReportCubit>(
+        () => _i242.BookingReportCubit(gh<_i11.BookingService>()));
     gh.factory<_i222.ReportCubit>(
         () => _i222.ReportCubit(gh<_i266.ReportService>()));
     gh.factory<_i304.AuthCubit>(
