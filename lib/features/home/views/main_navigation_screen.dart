@@ -23,6 +23,7 @@ import 'package:clinics/core/navigation/app_routes.dart';
 
 // Enum to manage the current view state for the toggle buttons
 enum BookingView { booking, unconfirmed, confirmed, unreadcancelled }
+enum ConfirmedTab { previous, currentAndLater }
 
 // Helper class to pass filter data between the screen and the modal
 class BookingFilters {
@@ -71,6 +72,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
   BookingFilters _currentFilters = BookingFilters();
   // State variable to control which list is shown (Pending Bookings vs. Confirmed)
   BookingView _currentView = BookingView.booking;
+  ConfirmedTab _currentConfirmedTab = ConfirmedTab.currentAndLater;
 
   @override
   void initState() {
@@ -263,6 +265,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               children: [
                 // The "Booking" and "Confirm" toggle buttons
                 _buildToggleButtons(theme),
+                
+                if (_currentView == BookingView.confirmed)
+                  _buildConfirmedSubTabs(theme),
+
                 // Expanded ensures the list below fills the remaining screen space
                 Expanded(
                   child: GradientBackground(
@@ -282,7 +288,24 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                               return booking.status == BookingStatus.unconfirmed;
                             } else if (_currentView == BookingView.confirmed) {
                               // Show confirmed bookings
-                              return booking.status == BookingStatus.confirmed;
+                              if (booking.status != BookingStatus.confirmed) return false;
+                              
+                              if (booking.confirmedDate == null) return false;
+                              
+                              try {
+                                final date = DateTime.parse(booking.confirmedDate!);
+                                final now = DateTime.now();
+                                final normalizedDate = DateTime(date.year, date.month, date.day);
+                                final normalizedNow = DateTime(now.year, now.month, now.day);
+                                
+                                if (_currentConfirmedTab == ConfirmedTab.previous) {
+                                  return normalizedDate.isBefore(normalizedNow);
+                                } else {
+                                  return !normalizedDate.isBefore(normalizedNow);
+                                }
+                              } catch (e) {
+                                return false;
+                              }
                             } else {
                               // Show unreadcancelled bookings
                               return booking.status ==
@@ -494,6 +517,74 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                     : Colors.black87),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             fontSize: 13,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmedSubTabs(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildSubTabButton(
+              title: 'Previous Days',
+              tab: ConfirmedTab.previous,
+              theme: theme,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildSubTabButton(
+              title: 'Current & Later',
+              tab: ConfirmedTab.currentAndLater,
+              theme: theme,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubTabButton({
+    required String title,
+    required ConfirmedTab tab,
+    required ThemeData theme,
+  }) {
+    final isSelected = _currentConfirmedTab == tab;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _currentConfirmedTab = tab;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.primaryColor.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? theme.primaryColor : Colors.grey.shade400,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isSelected
+                ? theme.primaryColor
+                : (theme.brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 12,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
