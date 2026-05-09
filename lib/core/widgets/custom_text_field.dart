@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final bool obscureText;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final TextInputType? keyboardType;
 
   const CustomTextField({
     super.key,
@@ -14,17 +15,45 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.validator,
     this.onChanged,
+    this.keyboardType,
   });
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.obscureText;
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      onChanged: onChanged,
+      controller: widget.controller,
+      obscureText: _obscureText,
+      validator: widget.validator,
+      onChanged: widget.onChanged,
+      keyboardType: widget.keyboardType,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
+        suffixIcon: widget.obscureText
+            ? IconButton(
+                icon: Icon(
+                  _obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureText = !_obscureText;
+                  });
+                },
+              )
+            : null,
         // Error messages can be hard to see with a glass UI,
         // so let's give them a more visible style.
         errorStyle: const TextStyle(

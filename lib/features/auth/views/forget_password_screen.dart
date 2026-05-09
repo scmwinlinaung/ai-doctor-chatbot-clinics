@@ -124,6 +124,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                 CustomTextField(
                                   hintText: 'Phone Number (09xxxxxxxx)',
                                   controller: phonenoCtrl,
+                                  keyboardType: TextInputType.phone,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Phone number is required.';
