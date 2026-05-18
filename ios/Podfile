@@ -4,12 +4,6 @@ platform :ios, '13.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# Increase download timeout for slow networks (10 minutes)
-ENV['COCOAPODS_DOWNLOAD_TIMEOUT'] = '600'
-
-# Configure for Facebook SDK binary downloads
-source 'https://cdn.cocoapods.org/'
-
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -51,8 +45,6 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
-      # Fix for Facebook SDK build issues
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
     end
   end
 end
