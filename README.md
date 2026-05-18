@@ -48,4 +48,10 @@ flutter build appbundle --release
 
 # Build APK for testing
 flutter build apk --release
+
+# Build iOS (requires macOS or CI/CD)
+flutter build ios --no-codesign --release
 ```
+
+## CI/CD (GitHub Actions)
+A workflow is configured in `.github/workflows/ios-build.yml` to automatically verify iOS builds on every push to `main`.
