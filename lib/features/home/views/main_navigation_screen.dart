@@ -250,6 +250,16 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ),
                 IconButton(
                   icon: Icon(
+                    Icons.notifications_active_rounded,
+                    color: theme.primaryColor,
+                  ),
+                  onPressed: () {
+                    context.push(AppRoutes.doctorList);
+                  },
+                  tooltip: 'Doctor Notifications',
+                ),
+                IconButton(
+                  icon: Icon(
                     Icons.filter_list_rounded,
                     color: theme.primaryColor,
                   ),
@@ -633,8 +643,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               ReadStatusBadge(isRead: booking.isReadByClinic ?? true),
               const SizedBox(height: 12),
               if (booking.user != null) ...[
-                _buildInfoRow(
-                    'Patient', booking.user?.username ?? 'N/A', theme),
+                _buildInfoRow('Patient Account', booking.user?.username ?? 'N/A', theme),
                 InkWell(
                   onTap: () => _launchPhoneDialer(booking.user!.phoneno),
                   child: _buildInfoRow(
@@ -645,6 +654,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                   ),
                 ),
               ],
+              if (booking.patientName != null)
+                _buildInfoRow('Patient Name', booking.patientName!, theme),
+              if (booking.age != null)
+                _buildInfoRow('Age', booking.age.toString(), theme),
               // Conditionally show doctor and date for confirmed bookings
               if (booking.doctorName != null)
                 _buildInfoRow(
@@ -1644,6 +1657,10 @@ class _BookAgainModalState extends State<_BookAgainModal> {
                       const SizedBox(height: 8),
                       Text('Name: ${widget.booking.user?.username ?? 'N/A'}'),
                       Text('Phone: ${widget.booking.user?.phoneno ?? 'N/A'}'),
+                      if (widget.booking.patientName != null)
+                        Text('Patient Name: ${widget.booking.patientName}'),
+                      if (widget.booking.age != null)
+                        Text('Age: ${widget.booking.age}'),
                     ],
                   ),
                 ),

@@ -69,8 +69,10 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
       
       // Headers
       sheetObject.appendRow([
-        TextCellValue('Patient Name'),
+        TextCellValue('Patient'),
         TextCellValue('Phone Number'),
+        TextCellValue('Patient Name'),
+        TextCellValue('Age'),
         TextCellValue('Doctor Name'),
         TextCellValue('Date'),
         TextCellValue('Time'),
@@ -91,6 +93,8 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
         sheetObject.appendRow([
           TextCellValue(booking.user?.username ?? 'N/A'),
           TextCellValue(booking.user?.phoneno ?? 'N/A'),
+          TextCellValue(booking.patientName ?? 'N/A'),
+          TextCellValue(booking.age?.toString() ?? 'N/A'),
           TextCellValue(booking.doctorName ?? 'N/A'),
           TextCellValue(formattedDate),
           TextCellValue(booking.time ?? 'N/A'),
@@ -355,6 +359,8 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
           columns: const [
             DataColumn(label: Text('Patient', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Phone', style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text('Patient Name', style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text('Age', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Doctor', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Time', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -374,6 +380,8 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
             return DataRow(cells: [
               DataCell(Text(booking.user?.username ?? 'N/A')),
               DataCell(Text(booking.user?.phoneno ?? 'N/A')),
+              DataCell(Text(booking.patientName ?? 'N/A')),
+              DataCell(Text(booking.age?.toString() ?? 'N/A')),
               DataCell(Text(booking.doctorName ?? 'N/A')),
               DataCell(Text(formattedDate)),
               DataCell(Text(booking.time ?? 'N/A')),

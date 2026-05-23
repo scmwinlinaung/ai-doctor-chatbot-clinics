@@ -11,8 +11,12 @@ import 'package:clinics/features/reports/cubit/booking_report_cubit.dart';
 import 'package:clinics/features/reports/views/booking_report_screen.dart';
 import 'package:clinics/features/reports/views/clinic_report_screen.dart';
 import 'package:clinics/features/subscription/views/subscription_screen.dart';
+import 'package:clinics/features/booking/views/doctor_list_screen.dart';
+import 'package:clinics/features/booking/cubit/doctor_notification_cubit.dart';
+import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -64,6 +68,18 @@ class AppRouter {
       //   path: AppRoutes.bookingListing, // Use the static constant
       //   builder: (context, state) => const BookingListingScreenProvider(),
       // ),
+      GoRoute(
+        path: AppRoutes.doctorList,
+        builder: (context, state) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => getIt<ClinicCubit>()),
+              BlocProvider(create: (context) => getIt<DoctorNotificationCubit>()),
+            ],
+            child: const DoctorListScreen(),
+          );
+        },
+      ),
       GoRoute(
         path: AppRoutes.forgetPassword,
         builder: (context, state) => const ForgetPasswordScreen(),

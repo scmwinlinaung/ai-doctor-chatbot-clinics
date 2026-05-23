@@ -26,7 +26,9 @@ class DioClient {
       return client;
     };
 
-    _dio.interceptors.add(JwtInterceptor(TokenStorageService()));
+    if (_dio.interceptors.whereType<JwtInterceptor>().isEmpty) {
+      _dio.interceptors.add(JwtInterceptor(TokenStorageService()));
+    }
     return _dio;
   }
 

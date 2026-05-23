@@ -9,12 +9,15 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:clinics/core/services/notification_api_service.dart' as _i127;
 import 'package:clinics/features/auth/cubit/auth_cubit.dart' as _i304;
 import 'package:clinics/features/auth/cubit/user_cubit.dart' as _i142;
 import 'package:clinics/features/auth/services/token_storage_service.dart'
     as _i225;
 import 'package:clinics/features/booking/cubit/booking_cubit.dart' as _i999;
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart' as _i983;
+import 'package:clinics/features/booking/cubit/doctor_notification_cubit.dart'
+    as _i369;
 import 'package:clinics/features/booking/service/booking_service.dart' as _i11;
 import 'package:clinics/features/booking/service/clinic_service.dart' as _i753;
 import 'package:clinics/features/home/cubit/advertisement_cubit.dart' as _i745;
@@ -44,6 +47,8 @@ extension GetItInjectableX on _i174.GetIt {
       environment,
       environmentFilter,
     );
+    gh.factory<_i127.NotificationApiService>(
+        () => _i127.NotificationApiService());
     gh.factory<_i142.UserCubit>(() => _i142.UserCubit());
     gh.factory<_i225.TokenStorageService>(() => _i225.TokenStorageService());
     gh.factory<_i11.BookingService>(() => _i11.BookingService());
@@ -55,6 +60,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i838.RedemptionService>(() => _i838.RedemptionService());
     gh.factory<_i266.ReportService>(() => _i266.ReportService());
     gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
+    gh.factory<_i369.DoctorNotificationCubit>(() =>
+        _i369.DoctorNotificationCubit(gh<_i127.NotificationApiService>()));
     gh.factory<_i457.RedemptionCubit>(
         () => _i457.RedemptionCubit(gh<_i838.RedemptionService>()));
     gh.factory<_i999.BookingCubit>(

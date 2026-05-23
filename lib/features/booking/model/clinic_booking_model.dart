@@ -58,6 +58,8 @@ class ClinicBookingModel with _$ClinicBookingModel {
       String? confirmedDate,
       String? time,
       String? doctorName,
+      String? patientName,
+      int? age,
       String? date,
       String? createdAt,
       bool? isReadByClinic}) = _ClinicBookingModel;

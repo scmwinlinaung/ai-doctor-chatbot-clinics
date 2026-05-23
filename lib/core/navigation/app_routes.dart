@@ -16,4 +16,5 @@ class AppRoutes {
   static const String redemptionScanner = '/redemption-scanner';
   static const String clinicReport = '/clinic-report';
   static const String bookingReport = '/booking-report';
+  static const String doctorList = '/doctor-list';
 }
