@@ -20,6 +20,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:clinics/features/booking/widgets/booking_visibility_detector.dart';
 import 'package:clinics/features/booking/widgets/read_status_badge.dart';
 import 'package:clinics/core/navigation/app_routes.dart';
+import 'package:clinics/features/booking/views/doctor_list_screen.dart';
+import 'package:clinics/features/booking/cubit/doctor_notification_cubit.dart';
+import 'package:clinics/features/reports/views/booking_report_screen.dart';
+import 'package:clinics/features/reports/cubit/booking_report_cubit.dart';
+import 'package:clinics/features/reports/views/clinic_report_screen.dart';
+import 'package:clinics/features/reports/cubit/report_cubit.dart';
 
 // Enum to manage the current view state for the toggle buttons
 enum BookingView { booking, unconfirmed, confirmed, unreadcancelled }
@@ -45,8 +51,54 @@ class BookingFilters {
 }
 
 // Provider Wrapper for the screen
-class MainNavigationScreen extends StatelessWidget {
+class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
+
+  @override
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _selectedIndex = 0;
+  String? _clinicId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClinicId();
+  }
+
+  Future<void> _loadClinicId() async {
+    final tokenStorage = GetIt.instance<TokenStorageService>();
+    final id = await tokenStorage.getClinicId();
+    if (mounted) {
+      setState(() {
+        _clinicId = id;
+      });
+    }
+  }
+
+  List<Widget> get _screens => [
+    const BookingListingScreen(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => GetIt.instance<ClinicCubit>()),
+        BlocProvider(create: (context) => GetIt.instance<DoctorNotificationCubit>()),
+      ],
+      child: const DoctorListScreen(),
+    ),
+    BlocProvider(
+      create: (context) => GetIt.instance<BookingReportCubit>(),
+      child: const BookingReportScreen(),
+    ),
+    if (_clinicId != null)
+      BlocProvider(
+        create: (context) => GetIt.instance<ReportCubit>(),
+        child: ClinicReportScreen(clinicId: _clinicId!),
+      )
+    else
+      const Center(child: LoadingWidget()),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +107,42 @@ class MainNavigationScreen extends StatelessWidget {
         BlocProvider(create: (context) => GetIt.instance<BookingCubit>()),
         BlocProvider(create: (context) => GetIt.instance<ClinicCubit>()),
       ],
-      child: const BookingListingScreen(),
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.list_alt_rounded),
+              label: 'Bookings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications_active_rounded),
+              label: 'Doctors',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_rounded),
+              label: 'Booking',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.analytics_rounded),
+              label: 'Clinic',
+            ),
+          ],
+          selectedItemColor: AppColors.primaryColor,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+        ),
+      ),
     );
   }
 }
@@ -219,44 +306,6 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                     context.push(AppRoutes.redemptionScanner);
                   },
                   tooltip: 'Scan Redemption Code',
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.assessment_rounded,
-                    color: theme.primaryColor,
-                  ),
-                  onPressed: () async {
-                    final tokenStorage = GetIt.instance<TokenStorageService>();
-                    final clinicId = await tokenStorage.getClinicId();
-                    if (clinicId != null && context.mounted) {
-                      context.push('${AppRoutes.clinicReport}?clinicId=$clinicId');
-                    } else if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Clinic ID not found.')),
-                      );
-                    }
-                  },
-                  tooltip: 'Clinic Report',
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.list_alt_rounded,
-                    color: theme.primaryColor,
-                  ),
-                  onPressed: () {
-                    context.push(AppRoutes.bookingReport);
-                  },
-                  tooltip: 'Booking Report',
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.notifications_active_rounded,
-                    color: theme.primaryColor,
-                  ),
-                  onPressed: () {
-                    context.push(AppRoutes.doctorList);
-                  },
-                  tooltip: 'Doctor Notifications',
                 ),
                 IconButton(
                   icon: Icon(

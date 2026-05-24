@@ -1,6 +1,6 @@
+import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/core/util/date_util.dart';
 import 'package:clinics/core/widgets/custom_text_field.dart';
-import 'package:clinics/core/widgets/gradient_background.dart';
 import 'package:clinics/features/reports/cubit/report_cubit.dart';
 import 'package:clinics/features/reports/cubit/report_state.dart';
 import 'package:clinics/features/reports/models/clinic_report_model.dart';
@@ -40,175 +40,143 @@ class _ClinicReportScreenState extends State<ClinicReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         title: const Text(
-          'Clinic Report',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          'Clinic Overview',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
-        backgroundColor: Colors.transparent,
+        centerTitle: false,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        surfaceTintColor: Colors.transparent,
+        automaticallyImplyLeading: false,
       ),
-      body: GradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildFilters(),
-              Expanded(
-                child: BlocBuilder<ReportCubit, ReportState>(
-                  builder: (context, state) {
-                    return state.when(
-                      initial: () => const Center(
-                        child: Text('Initializing...', style: TextStyle(color: Colors.black54)),
-                      ),
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(color: Colors.black),
-                      ),
-                      success: (data) => _buildReportContent(data),
-                      error: (message) => Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-                              const SizedBox(height: 16),
-                              Text(
-                                message,
-                                style: const TextStyle(color: Colors.black, fontSize: 16),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton(
-                                onPressed: _fetchReport,
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+      body: Column(
+        children: [
+          _buildFilters(),
+          Expanded(
+            child: BlocBuilder<ReportCubit, ReportState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  success: (data) => _buildReportContent(data),
+                  error: (message) => _buildErrorState(message),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black.withOpacity(0.2)),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDatePicker(
-                    label: 'From',
-                    selectedDate: fromDate,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: fromDate ?? DateTime.now(),
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() => fromDate = picked);
-                        _fetchReport();
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDatePicker(
-                    label: 'To',
-                    selectedDate: toDate,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: toDate ?? DateTime.now(),
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() => toDate = picked);
-                        _fetchReport();
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            CustomTextField(
-              controller: _usernameController,
-              hintText: 'Filter by username',
-              onChanged: (value) {
-                // Debounce search if needed, but for now simple fetch
-                _fetchReport();
-              },
-            ),
-            if (fromDate != null || toDate != null || _usernameController.text.isNotEmpty)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      fromDate = null;
-                      toDate = null;
-                      _usernameController.clear();
-                    });
-                    _fetchReport();
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildFilterChip(
+                  label: 'Start Date',
+                  value: fromDate != null ? DateFormat('MMM dd, yyyy').format(fromDate!) : 'Start',
+                  icon: Icons.calendar_today_outlined,
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: fromDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() => fromDate = picked);
+                      _fetchReport();
+                    }
                   },
-                  child: const Text(
-                    'Clear Filters',
-                    style: TextStyle(color: Colors.black54, fontSize: 12),
-                  ),
                 ),
               ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildFilterChip(
+                  label: 'End Date',
+                  value: toDate != null ? DateFormat('MMM dd, yyyy').format(toDate!) : 'End',
+                  icon: Icons.event_available_outlined,
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: toDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() => toDate = picked);
+                      _fetchReport();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.lightBackground,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextField(
+              controller: _usernameController,
+              decoration: const InputDecoration(
+                hintText: 'Search by username...',
+                prefixIcon: Icon(Icons.search, color: AppColors.primaryColor),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+              ),
+              onSubmitted: (_) => _fetchReport(),
+            ),
+          ),
+          if (fromDate != null || toDate != null || _usernameController.text.isNotEmpty)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    fromDate = null;
+                    toDate = null;
+                    _usernameController.clear();
+                  });
+                  _fetchReport();
+                },
+                child: const Text('Reset All', style: TextStyle(color: Colors.redAccent)),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildDatePicker({required String label, DateTime? selectedDate, required VoidCallback onTap}) {
-    return InkWell(
+  Widget _buildFilterChip({required String label, required String value, required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
+          color: AppColors.lightBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black.withOpacity(0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.black54, fontSize: 10)),
+            Text(label, style: const TextStyle(fontSize: 10, color: AppColors.lightSecondaryText, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 14, color: Colors.black54),
-                const SizedBox(width: 8),
-                Text(
-                  selectedDate != null ? DateFormat('yyyy-MM-dd').format(selectedDate) : 'Select',
-                  style: const TextStyle(color: Colors.black, fontSize: 13),
-                ),
+                Icon(icon, size: 14, color: AppColors.primaryColor),
+                const SizedBox(width: 6),
+                Expanded(child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, overflow: TextOverflow.ellipsis))),
               ],
             ),
           ],
@@ -221,48 +189,50 @@ class _ClinicReportScreenState extends State<ClinicReportScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSummaryCards(data),
+        _buildSummarySection(data),
         const SizedBox(height: 24),
-        const Text(
-          'Redemption Details',
-          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Recent Redemptions',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.lightPrimaryText),
+            ),
+            if (data.redemptions != null && data.redemptions!.isNotEmpty)
+              Text(
+                '${data.redemptions!.length} records',
+                style: const TextStyle(fontSize: 12, color: AppColors.lightSecondaryText),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
         if (data.redemptions == null || data.redemptions!.isEmpty)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 48.0),
-              child: Text(
-                'No redemptions match the filters.',
-                style: TextStyle(color: Colors.black54),
-              ),
-            ),
-          )
+          _buildEmptyState()
         else
-          ...data.redemptions!.map((redemption) => _buildRedemptionTile(redemption)),
-        const SizedBox(height: 24),
+          ...data.redemptions!.map((redemption) => _buildRedemptionCard(redemption)),
+        const SizedBox(height: 32),
       ],
     );
   }
 
-  Widget _buildSummaryCards(ClinicReportModel data) {
+  Widget _buildSummarySection(ClinicReportModel data) {
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
-            'Total Points',
+            'Points Redeemed',
             data.totalPointsRedeemed?.toString() ?? '0',
             Icons.stars_rounded,
-            Colors.orangeAccent,
+            const Color(0xFFF39C12),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: _buildStatCard(
-            'Total Count',
+            'Total Transactions',
             data.totalRedemptions?.toString() ?? '0',
             Icons.receipt_long_rounded,
-            Colors.cyanAccent,
+            const Color(0xFF2ECC71),
           ),
         ),
       ],
@@ -271,11 +241,13 @@ class _ClinicReportScreenState extends State<ClinicReportScreen> {
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,87 +255,115 @@ class _ClinicReportScreenState extends State<ClinicReportScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             value,
-            style: const TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.lightPrimaryText),
           ),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(color: Colors.black54, fontSize: 12),
+            style: const TextStyle(fontSize: 12, color: AppColors.lightSecondaryText, fontWeight: FontWeight.w500),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRedemptionTile(RedemptionDetail redemption) {
+  Widget _buildRedemptionCard(RedemptionDetail redemption) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.05),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
       ),
       child: Row(
         children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.redeem_rounded, color: AppColors.primaryColor),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   redemption.reward?.title ?? 'Unknown Reward',
-                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.lightPrimaryText),
                 ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.person, size: 12, color: Colors.black54),
-                    const SizedBox(width: 4),
-                    Text(
-                      redemption.user?.username ?? 'N/A',
-                      style: const TextStyle(color: Colors.black54, fontSize: 12),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  'User: ${redemption.user?.username ?? 'N/A'}',
+                  style: const TextStyle(fontSize: 13, color: AppColors.lightSecondaryText),
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    const Icon(Icons.access_time, size: 12, color: Colors.black54),
-                    const SizedBox(width: 4),
-                    Text(
-                      redemption.redeemedAt != null ? DateUtil.formatToLocalDateTime(redemption.redeemedAt!) : 'N/A',
-                      style: const TextStyle(color: Colors.black54, fontSize: 11),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  redemption.redeemedAt != null ? DateFormat('MMM dd, yyyy • HH:mm').format(redemption.redeemedAt!) : 'N/A',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                ),
-                child: Text(
-                  '${redemption.points ?? 0} pts',
-                  style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF39C12).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '${redemption.points ?? 0} pts',
+              style: const TextStyle(color: Color(0xFFF39C12), fontWeight: FontWeight.bold, fontSize: 13),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40.0),
+        child: Column(
+          children: [
+            Icon(Icons.history_rounded, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            const Text('No redemptions found', style: TextStyle(color: AppColors.lightSecondaryText)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+            const SizedBox(height: 16),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _fetchReport, child: const Text('Retry')),
+          ],
+        ),
       ),
     );
   }

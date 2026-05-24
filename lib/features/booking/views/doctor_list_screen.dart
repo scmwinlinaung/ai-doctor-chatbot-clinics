@@ -85,10 +85,6 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new),
-            onPressed: () => Navigator.pop(context),
-          ),
         ),
         body: GradientBackground(
           child: SafeArea(

@@ -1,6 +1,6 @@
 import 'dart:io';
+import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/core/widgets/custom_dropdown_button_form_field.dart';
-import 'package:clinics/core/widgets/gradient_background.dart';
 import 'package:clinics/features/auth/services/token_storage_service.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/features/booking/model/clinic_booking_model.dart';
@@ -65,9 +65,10 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
   Future<void> _exportToExcel(List<ClinicBookingModel> bookings) async {
     try {
       var excel = Excel.createExcel();
-      Sheet sheetObject = excel['Booking Report'];
+      String sheetName = 'Booking Report';
+      excel.rename('Sheet1', sheetName);
+      Sheet sheetObject = excel[sheetName];
       
-      // Headers
       sheetObject.appendRow([
         TextCellValue('Patient'),
         TextCellValue('Phone Number'),
@@ -102,11 +103,13 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
         ]);
       }
       
-      var fileBytes = excel.save();
+      var fileBytes = excel.save(fileName: 'booking_report.xlsx');
+      if (fileBytes == null) throw Exception('Failed to generate Excel file bytes');
+
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/booking_report_${DateTime.now().millisecondsSinceEpoch}.xlsx';
       final file = File(filePath);
-      await file.writeAsBytes(fileBytes!);
+      await file.writeAsBytes(fileBytes);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,22 +130,33 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         title: const Text(
-          'Booking Report',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          'Booking Analytics',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
-        backgroundColor: Colors.transparent,
+        centerTitle: false,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        surfaceTintColor: Colors.transparent,
+        automaticallyImplyLeading: false,
         actions: [
           BlocBuilder<BookingReportCubit, BookingReportState>(
             builder: (context, state) {
               return state.maybeWhen(
-                success: (bookings) => IconButton(
-                  icon: const Icon(Icons.file_download, color: Colors.black),
-                  onPressed: () => _exportToExcel(bookings),
+                success: (bookings) => Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: TextButton.icon(
+                    onPressed: () => _exportToExcel(bookings),
+                    icon: const Icon(Icons.file_download_outlined, size: 20),
+                    label: const Text('Export'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primaryColor,
+                      backgroundColor: AppColors.primaryColor.withOpacity(0.1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
                 ),
                 orElse: () => const SizedBox.shrink(),
               );
@@ -150,192 +164,155 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
           ),
         ],
       ),
-      body: GradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildFilters(),
-              Expanded(
-                child: BlocBuilder<BookingReportCubit, BookingReportState>(
-                  builder: (context, state) {
-                    return state.when(
-                      initial: () => const Center(
-                        child: Text('Initializing...', style: TextStyle(color: Colors.black54)),
-                      ),
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(color: Colors.black),
-                      ),
-                      success: (bookings) => _buildReportTable(bookings),
-                      error: (message) => Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-                              const SizedBox(height: 16),
-                              Text(
-                                message,
-                                style: const TextStyle(color: Colors.black, fontSize: 16),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton(
-                                onPressed: _fetchReport,
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+      body: Column(
+        children: [
+          _buildFilters(),
+          Expanded(
+            child: BlocBuilder<BookingReportCubit, BookingReportState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  success: (bookings) => _buildReportList(bookings),
+                  error: (message) => _buildErrorState(message),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black.withOpacity(0.2)),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDatePicker(
-                    label: 'From',
-                    selectedDate: fromDate,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: fromDate ?? DateTime.now(),
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() => fromDate = picked);
-                        _fetchReport();
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDatePicker(
-                    label: 'To',
-                    selectedDate: toDate,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: toDate ?? DateTime.now(),
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() => toDate = picked);
-                        _fetchReport();
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            BlocBuilder<ClinicCubit, ClinicState>(
-              builder: (context, state) {
-                return state.maybeWhen(
-                  loaded: (clinic) {
-                    return CustomDropdownButtonFormField(
-                      labelText: 'Filter by Doctor',
-                      icon: Icons.person_outline,
-                      value: _selectedDoctorName,
-                      items: [
-                        const DropdownMenuItem<String>(
-                          value: null,
-                          child: Text('All Doctors'),
-                        ),
-                        ...(clinic.doctors ?? []).map((DoctorModel doctor) {
-                          return DropdownMenuItem<String>(
-                            value: doctor.name,
-                            child: Text(
-                              doctor.name ?? 'Unnamed Doctor',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedDoctorName = value;
-                        });
-                        _fetchReport();
-                      },
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildFilterChip(
+                  label: 'From Date',
+                  value: fromDate != null ? DateFormat('MMM dd, yyyy').format(fromDate!) : 'Select Start',
+                  icon: Icons.calendar_today_outlined,
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: fromDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
                     );
+                    if (picked != null) {
+                      setState(() => fromDate = picked);
+                      _fetchReport();
+                    }
                   },
-                  orElse: () => const SizedBox.shrink(),
-                );
-              },
-            ),
-            if (fromDate != null || toDate != null || _selectedDoctorName != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      fromDate = null;
-                      toDate = null;
-                      _selectedDoctorName = null;
-                    });
-                    _fetchReport();
-                  },
-                  child: const Text(
-                    'Clear Filters',
-                    style: TextStyle(color: Colors.black54, fontSize: 12),
-                  ),
                 ),
               ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildFilterChip(
+                  label: 'To Date',
+                  value: toDate != null ? DateFormat('MMM dd, yyyy').format(toDate!) : 'Select End',
+                  icon: Icons.event_available_outlined,
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: toDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() => toDate = picked);
+                      _fetchReport();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          BlocBuilder<ClinicCubit, ClinicState>(
+            builder: (context, state) {
+              return state.maybeWhen(
+                loaded: (clinic) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.lightBackground,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedDoctorName,
+                        hint: const Text('Filter by Doctor'),
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primaryColor),
+                        items: [
+                          const DropdownMenuItem<String>(
+                            value: null,
+                            child: Text('All Doctors'),
+                          ),
+                          ...(clinic.doctors ?? []).map((doctor) {
+                            return DropdownMenuItem<String>(
+                              value: doctor.name,
+                              child: Text(doctor.name ?? 'Unnamed Doctor'),
+                            );
+                          }).toList(),
+                        ],
+                        onChanged: (value) {
+                          setState(() => _selectedDoctorName = value);
+                          _fetchReport();
+                        },
+                      ),
+                    ),
+                  );
+                },
+                orElse: () => const SizedBox.shrink(),
+              );
+            },
+          ),
+          if (fromDate != null || toDate != null || _selectedDoctorName != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    fromDate = null;
+                    toDate = null;
+                    _selectedDoctorName = null;
+                  });
+                  _fetchReport();
+                },
+                child: const Text('Reset Filters', style: TextStyle(color: Colors.redAccent)),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildDatePicker({required String label, DateTime? selectedDate, required VoidCallback onTap}) {
-    return InkWell(
+  Widget _buildFilterChip({required String label, required String value, required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
+          color: AppColors.lightBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black.withOpacity(0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.black54, fontSize: 10)),
+            Text(label, style: const TextStyle(fontSize: 10, color: AppColors.lightSecondaryText, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 14, color: Colors.black54),
+                Icon(icon, size: 16, color: AppColors.primaryColor),
                 const SizedBox(width: 8),
-                Text(
-                  selectedDate != null ? DateFormat('yyyy-MM-dd').format(selectedDate) : 'Select',
-                  style: const TextStyle(color: Colors.black, fontSize: 13),
-                ),
+                Expanded(child: Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, overflow: TextOverflow.ellipsis))),
               ],
             ),
           ],
@@ -344,50 +321,149 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
     );
   }
 
-  Widget _buildReportTable(List<ClinicBookingModel> bookings) {
+  Widget _buildReportList(List<ClinicBookingModel> bookings) {
     if (bookings.isEmpty) {
-      return const Center(
-        child: Text('No confirmed bookings found.', style: TextStyle(color: Colors.black54)),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            const Text('No bookings found for selected criteria', style: TextStyle(color: AppColors.lightSecondaryText)),
+          ],
+        ),
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Patient', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Phone', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Patient Name', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Age', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Doctor', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Time', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: bookings.length,
+      itemBuilder: (context, index) {
+        final booking = bookings[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Account: ${booking.user?.username ?? 'N/A'}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              if (booking.patientName != null && booking.patientName!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    'Patient: ${booking.patientName}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: AppColors.primaryColor.withOpacity(0.8),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        _buildStatusBadge(booking.status?.name ?? 'N/A'),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _buildDetailItem(Icons.phone_outlined, booking.user?.phoneno ?? 'N/A'),
+                        const SizedBox(width: 24),
+                        _buildDetailItem(Icons.cake_outlined, '${booking.age ?? 'N/A'} yrs'),
+                      ],
+                    ),
+                    const Divider(height: 24, thickness: 0.5),
+                    Row(
+                      children: [
+                        Expanded(child: _buildDetailItem(Icons.medical_services_outlined, booking.doctorName ?? 'General')),
+                        _buildDetailItem(Icons.calendar_today_outlined, booking.date != null ? DateFormat('MMM dd').format(DateTime.parse(booking.date!)) : 'N/A'),
+                        const SizedBox(width: 16),
+                        _buildDetailItem(Icons.access_time_rounded, booking.time ?? 'N/A'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: AppColors.lightSecondaryText),
+        const SizedBox(width: 6),
+        Text(value, style: const TextStyle(fontSize: 13, color: AppColors.lightPrimaryText)),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color color;
+    switch (status.toLowerCase()) {
+      case 'confirmed':
+        color = Colors.green;
+        break;
+      case 'pending':
+        color = Colors.orange;
+        break;
+      case 'cancelled':
+        color = Colors.red;
+        break;
+      default:
+        color = AppColors.primaryColor;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+            const SizedBox(height: 16),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _fetchReport, child: const Text('Retry')),
           ],
-          rows: bookings.map((booking) {
-            String formattedDate = 'N/A';
-            if (booking.date != null) {
-              try {
-                DateTime parsedDate = DateTime.parse(booking.date!);
-                formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
-              } catch (e) {
-                formattedDate = booking.date!;
-              }
-            }
-            
-            return DataRow(cells: [
-              DataCell(Text(booking.user?.username ?? 'N/A')),
-              DataCell(Text(booking.user?.phoneno ?? 'N/A')),
-              DataCell(Text(booking.patientName ?? 'N/A')),
-              DataCell(Text(booking.age?.toString() ?? 'N/A')),
-              DataCell(Text(booking.doctorName ?? 'N/A')),
-              DataCell(Text(formattedDate)),
-              DataCell(Text(booking.time ?? 'N/A')),
-              DataCell(Text(booking.status?.name ?? 'N/A')),
-            ]);
-          }).toList(),
         ),
       ),
     );
