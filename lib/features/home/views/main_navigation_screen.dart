@@ -27,6 +27,9 @@ import 'package:clinics/features/reports/cubit/booking_report_cubit.dart';
 import 'package:clinics/features/reports/views/clinic_report_screen.dart';
 import 'package:clinics/features/reports/cubit/report_cubit.dart';
 
+import 'package:clinics/features/notification/cubit/clinic_notification_cubit.dart';
+import 'package:clinics/features/notification/cubit/clinic_notification_state.dart';
+
 // Enum to manage the current view state for the toggle buttons
 enum BookingView { booking, unconfirmed, confirmed, unreadcancelled }
 enum ConfirmedTab { previous, currentAndLater }
@@ -61,11 +64,14 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
   String? _clinicId;
+  late final ClinicNotificationCubit _notificationCubit;
 
   @override
   void initState() {
     super.initState();
     _loadClinicId();
+    _notificationCubit = GetIt.instance<ClinicNotificationCubit>();
+    _notificationCubit.startPolling();
   }
 
   Future<void> _loadClinicId() async {
@@ -106,6 +112,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       providers: [
         BlocProvider(create: (context) => GetIt.instance<BookingCubit>()),
         BlocProvider(create: (context) => GetIt.instance<ClinicCubit>()),
+        BlocProvider.value(value: _notificationCubit),
       ],
       child: Scaffold(
         body: IndexedStack(
@@ -306,6 +313,69 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                     context.push(AppRoutes.redemptionScanner);
                   },
                   tooltip: 'Scan Redemption Code',
+                ),
+                BlocBuilder<ClinicNotificationCubit, ClinicNotificationState>(
+                  builder: (context, state) {
+                    final int unreadCount = state.maybeMap(
+                      loaded: (s) =>
+                          s.notifications.where((n) => n.isRead == false).length,
+                      orElse: () => 0,
+                    );
+
+                    return IconButton(
+                      onPressed: () async {
+                        await context.push(AppRoutes.notifications);
+                        if (context.mounted) {
+                          context.read<ClinicNotificationCubit>().fetchNotifications(isPolling: true);
+                        }
+                      },                      tooltip: 'Notifications',
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            Icons.notifications_none_rounded,
+                            color: theme.primaryColor,
+                            size: 28,
+                          ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    unreadCount > 99 ? '99+' : unreadCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 IconButton(
                   icon: Icon(

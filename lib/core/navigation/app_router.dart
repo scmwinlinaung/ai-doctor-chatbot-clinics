@@ -14,6 +14,8 @@ import 'package:clinics/features/subscription/views/subscription_screen.dart';
 import 'package:clinics/features/booking/views/doctor_list_screen.dart';
 import 'package:clinics/features/booking/cubit/doctor_notification_cubit.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
+import 'package:clinics/features/notification/views/notification_screen.dart';
+import 'package:clinics/features/notification/cubit/clinic_notification_cubit.dart';
 import 'package:clinics/core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -83,6 +85,15 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.forgetPassword,
         builder: (context, state) => const ForgetPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) {
+          return BlocProvider.value(
+            value: getIt<ClinicNotificationCubit>(),
+            child: const NotificationScreen(),
+          );
+        },
       ),
     ],
   );
