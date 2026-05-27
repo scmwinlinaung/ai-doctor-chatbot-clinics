@@ -379,7 +379,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 ),
                 IconButton(
                   icon: Icon(
-                    Icons.filter_list_rounded,
+                    Icons.search,
                     color: theme.primaryColor,
                   ),
                   onPressed: _showFilterModal,

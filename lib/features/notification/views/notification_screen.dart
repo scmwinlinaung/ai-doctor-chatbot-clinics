@@ -109,14 +109,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isUnread
-                        ? AppColors.primaryColor.withOpacity(0.1)
-                        : Colors.grey[100],
+                    color: AppColors.primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     _getIconForType(notification.type),
-                    color: isUnread ? AppColors.primaryColor : Colors.grey[400],
+                    color: AppColors.primaryColor,
                     size: 24,
                   ),
                 ),
@@ -140,12 +138,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             ),
                           ),
                           if (createdAt != null)
-                            Text(
-                              _getRelativeTime(createdAt),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[400],
-                                fontWeight: FontWeight.w500,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                _getRelativeTime(createdAt),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                         ],
