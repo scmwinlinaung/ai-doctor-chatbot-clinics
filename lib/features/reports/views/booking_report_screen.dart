@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:clinics/core/config/app_colors.dart';
 import 'package:clinics/core/widgets/custom_dropdown_button_form_field.dart';
+import 'package:clinics/core/widgets/searchable_grouped_doctor_dropdown.dart';
 import 'package:clinics/features/auth/services/token_storage_service.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/features/booking/model/clinic_booking_model.dart';
@@ -238,36 +239,18 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
             builder: (context, state) {
               return state.maybeWhen(
                 loaded: (clinic) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.lightBackground,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedDoctorName,
-                        hint: const Text('Filter by Doctor'),
-                        isExpanded: true,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primaryColor),
-                        items: [
-                          const DropdownMenuItem<String>(
-                            value: null,
-                            child: Text('All Doctors'),
-                          ),
-                          ...(clinic.doctors ?? []).map((doctor) {
-                            return DropdownMenuItem<String>(
-                              value: doctor.name,
-                              child: Text(doctor.name ?? 'Unnamed Doctor'),
-                            );
-                          }).toList(),
-                        ],
-                        onChanged: (value) {
-                          setState(() => _selectedDoctorName = value);
-                          _fetchReport();
-                        },
-                      ),
-                    ),
+                  return SearchableGroupedDoctorDropdown(
+                    labelText: 'Filter by Doctor',
+                    icon: Icons.person_outline,
+                    value: _selectedDoctorName,
+                    valueType: 'name',
+                    showAllOption: true,
+                    isDark: false,
+                    doctors: clinic.doctors ?? [],
+                    onChanged: (doctor) {
+                      setState(() => _selectedDoctorName = doctor?.name);
+                      _fetchReport();
+                    },
                   );
                 },
                 orElse: () => const SizedBox.shrink(),

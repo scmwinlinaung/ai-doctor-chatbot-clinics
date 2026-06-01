@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinics/core/widgets/custom_button.dart';
 import 'package:clinics/core/widgets/loading_overlay.dart';
 import 'package:clinics/core/widgets/gradient_background.dart';
+import 'package:clinics/core/widgets/searchable_grouped_doctor_dropdown.dart';
 import 'package:clinics/features/booking/cubit/booking_cubit.dart';
 import 'package:clinics/features/booking/model/clinic_booking_model.dart';
 import 'package:clinics/features/booking/model/doctor_model.dart';
@@ -1257,28 +1258,16 @@ class _FilterModalSheetState extends State<_FilterModalSheet>
                             ),
                           ),
                           loaded: (clinic) {
-                            return CustomDropdownButtonFormField(
+                            return SearchableGroupedDoctorDropdown(
                               labelText: 'Doctor',
                               icon: Icons.person_outline,
                               value: _selectedDoctorName,
-                              items: [
-                                const DropdownMenuItem<String>(
-                                  value: null,
-                                  child: Text('All Doctors'),
-                                ),
-                                ...(clinic.doctors ?? []).map((DoctorModel doctor) {
-                                  return DropdownMenuItem<String>(
-                                    value: doctor.name,
-                                    child: Text(
-                                      doctor.name ?? 'Unnamed Doctor',
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                              onChanged: (value) {
+                              valueType: 'name',
+                              showAllOption: true,
+                              doctors: clinic.doctors ?? [],
+                              onChanged: (doctor) {
                                 setState(() {
-                                  _selectedDoctorName = value;
+                                  _selectedDoctorName = doctor?.name;
                                 });
                               },
                             );
@@ -1436,8 +1425,13 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GradientBackground(
-        child: Padding(
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
         left: 24,
@@ -1480,26 +1474,19 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                       ),
                     ),
                     loaded: (clinic) {
-                      return CustomDropdownButtonFormField(
+                      return SearchableGroupedDoctorDropdown(
                         labelText: 'Assign Doctor',
                         icon: Icons.person_outline,
                         value: _selectedDoctorId,
-                        items: (clinic.doctors ?? []).map((DoctorModel doctor) {
-                          return DropdownMenuItem<String>(
-                            value: doctor.id,
-                            child: Text(
-                              doctor.name ?? 'Unnamed Doctor',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
+                        valueType: 'id',
+                        doctors: clinic.doctors ?? [],
+                        onChanged: (doctor) {
                           setState(() {
-                            _selectedDoctorId = value;
+                            _selectedDoctorId = doctor?.id;
                           });
                         },
-                        validator: (value) =>
-                            value == null ? 'Please select a doctor' : null,
+                        validator: (doctor) =>
+                            doctor == null ? 'Please select a doctor' : null,
                       );
                     },
                   );
@@ -1510,30 +1497,8 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                 controller: _dateController,
                 decoration: InputDecoration(
                   labelText: "Appointment Date",
-                  prefixIcon: const Icon(Icons.calendar_today_outlined,
-                      color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.2),
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  errorStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white38,
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                      width: 2.0,
-                    ),
-                  ),
+                  prefixIcon: Icon(Icons.calendar_today_outlined,
+                      color: isDark ? Colors.white70 : AppColors.primaryColor),
                 ),
                 onTap: _selectDate,
                 readOnly: true,
@@ -1546,30 +1511,8 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                 controller: _timeController,
                 decoration: InputDecoration(
                   labelText: "Appointment Time",
-                  prefixIcon:
-                      const Icon(Icons.access_time, color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.2),
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  errorStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white38,
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                      width: 2.0,
-                    ),
-                  ),
+                  prefixIcon: Icon(Icons.access_time, 
+                      color: isDark ? Colors.white70 : AppColors.primaryColor),
                 ),
                 onTap: _selectTime,
                 readOnly: true,
@@ -1582,29 +1525,8 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
                 controller: _serialNumberController,
                 decoration: InputDecoration(
                   labelText: "Serial Number",
-                  prefixIcon: const Icon(Icons.numbers, color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.2),
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  errorStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white38,
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                      width: 2.0,
-                    ),
-                  ),
+                  prefixIcon: Icon(Icons.numbers, 
+                      color: isDark ? Colors.white70 : AppColors.primaryColor),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) => value == null || value.isEmpty
@@ -1613,7 +1535,7 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
+                width: double.infinity,
                 child: CustomButton(
                   text: 'Confirm Appointment',
                   isLoading: _isConfirming,
@@ -1625,7 +1547,7 @@ class _ConfirmBookingModalState extends State<_ConfirmBookingModal> {
           ),
         ),
       ),
-    ));
+    );
   }
 }
 
@@ -1713,202 +1635,202 @@ class _BookAgainModalState extends State<_BookAgainModal> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GradientBackground(
-        child: Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 24,
-        right: 24,
-        top: 12,
-      ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Book Appointment Again',
-                style: theme.textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Book a new appointment with the same details',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 24),
+    final isDark = theme.brightness == Brightness.dark;
 
-              // Patient info display
-              if (widget.booking.user != null) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+    final Color titleColor = Colors.blue;
+    final Color sectionHeaderColor = Colors.teal;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color labelColor = isDark ? Colors.white70 : Colors.black87;
+    final Color iconColor = AppColors.primaryColor;
+    final Color fieldFillColor = isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 24,
+          right: 24,
+          top: 12,
+        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Patient Information',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Book Appointment Again',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Book a new appointment with the same details',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: labelColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Patient info display
+                if (widget.booking.user != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: sectionHeaderColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: sectionHeaderColor.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Patient Information',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: sectionHeaderColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Name: ${widget.booking.user?.username ?? 'N/A'}',
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          'Phone: ${widget.booking.user?.phoneno ?? 'N/A'}',
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                        ),
+                        if (widget.booking.patientName != null)
+                          Text(
+                            'Patient Name: ${widget.booking.patientName}',
+                            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                          ),
+                        if (widget.booking.age != null)
+                          Text(
+                            'Age: ${widget.booking.age}',
+                            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                BlocBuilder<ClinicCubit, ClinicState>(
+                  builder: (context, state) {
+                    return state.when(
+                      initial: () => const SizedBox.shrink(),
+                      loading: () => const Center(child: LoadingWidget()),
+                      error: (message) => Center(
+                        child: Text(
+                          'Error loading doctors: $message',
+                          style: TextStyle(color: theme.colorScheme.error),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text('Name: ${widget.booking.user?.username ?? 'N/A'}'),
-                      Text('Phone: ${widget.booking.user?.phoneno ?? 'N/A'}'),
-                      if (widget.booking.patientName != null)
-                        Text('Patient Name: ${widget.booking.patientName}'),
-                      if (widget.booking.age != null)
-                        Text('Age: ${widget.booking.age}'),
-                    ],
-                  ),
+                      loaded: (clinic) {
+                        return SearchableGroupedDoctorDropdown(
+                          labelText: 'Assign Doctor',
+                          icon: Icons.person_outline,
+                          value: _selectedDoctorId,
+                          valueType: 'id',
+                          isDark: isDark,
+                          doctors: clinic.doctors ?? [],
+                          onChanged: (doctor) {
+                            setState(() {
+                              _selectedDoctorId = doctor?.id;
+                            });
+                          },
+                          validator: (doctor) =>
+                              doctor == null ? 'Please select a doctor' : null,
+                        );
+                      },
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
+                TextFormField(
+                  controller: _dateController,
+                  style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                  decoration: InputDecoration(
+                    labelText: "Appointment Date",
+                    labelStyle: TextStyle(color: labelColor),
+                    prefixIcon: Icon(Icons.calendar_today_outlined, color: iconColor),
+                    filled: true,
+                    fillColor: fieldFillColor,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                    ),
+                  ),
+                  onTap: _selectDate,
+                  readOnly: true,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please select a date'
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _timeController,
+                  style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                  decoration: InputDecoration(
+                    labelText: "Appointment Time",
+                    labelStyle: TextStyle(color: labelColor),
+                    prefixIcon: Icon(Icons.access_time, color: iconColor),
+                    filled: true,
+                    fillColor: fieldFillColor,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                    ),
+                  ),
+                  onTap: _selectTime,
+                  readOnly: true,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please select a time'
+                      : null,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    text: 'Book New Appointment',
+                    isLoading: _isBooking,
+                    onPressed: _onBookAgain,
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
-
-              BlocBuilder<ClinicCubit, ClinicState>(
-                builder: (context, state) {
-                  return state.when(
-                    initial: () => const SizedBox.shrink(),
-                    loading: () => const Center(child: LoadingWidget()),
-                    error: (message) => Center(
-                      child: Text(
-                        'Error loading doctors: $message',
-                        style: TextStyle(color: theme.colorScheme.error),
-                      ),
-                    ),
-                    loaded: (clinic) {
-                      return CustomDropdownButtonFormField(
-                        labelText: 'Assign Doctor',
-                        icon: Icons.person_outline,
-                        value: _selectedDoctorId,
-                        items: (clinic.doctors ?? []).map((DoctorModel doctor) {
-                          return DropdownMenuItem<String>(
-                            value: doctor.id,
-                            child: Text(
-                              doctor.name ?? 'Unnamed Doctor',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedDoctorId = value;
-                          });
-                        },
-                        validator: (value) =>
-                            value == null ? 'Please select a doctor' : null,
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _dateController,
-                decoration: InputDecoration(
-                  labelText: "Appointment Date",
-                  prefixIcon: const Icon(Icons.calendar_today_outlined,
-                      color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.2),
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  errorStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white38,
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                      width: 2.0,
-                    ),
-                  ),
-                ),
-                onTap: _selectDate,
-                readOnly: true,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please select a date'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _timeController,
-                decoration: InputDecoration(
-                  labelText: "Appointment Time",
-                  prefixIcon:
-                      const Icon(Icons.access_time, color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.2),
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  errorStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white38,
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                      width: 2.0,
-                    ),
-                  ),
-                ),
-                onTap: _selectTime,
-                readOnly: true,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please select a time'
-                    : null,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
-                child: CustomButton(
-                  text: 'Book New Appointment',
-                  isLoading: _isBooking,
-                  onPressed: _onBookAgain,
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 }
