@@ -32,7 +32,7 @@ import 'package:clinics/features/notification/cubit/clinic_notification_cubit.da
 import 'package:clinics/features/notification/cubit/clinic_notification_state.dart';
 
 // Enum to manage the current view state for the toggle buttons
-enum BookingView { booking, unconfirmed, confirmed, unreadcancelled }
+enum BookingView { booking, unconfirmed, confirmed, unreadcancelled, cancelled }
 enum ConfirmedTab { previous, currentAndLater }
 
 // Helper class to pass filter data between the screen and the modal
@@ -436,6 +436,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                               } catch (e) {
                                 return false;
                               }
+                            } else if (_currentView == BookingView.cancelled) {
+                              // Show cancelled bookings
+                              return booking.status == BookingStatus.cancelled;
                             } else {
                               // Show unreadcancelled bookings
                               return booking.status ==
@@ -462,7 +465,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                                             ? 'No unconfirmed bookings found'
                                             : _currentView == BookingView.confirmed
                                                 ? 'No confirmed bookings found'
-                                                : 'No unread cancelled bookings found',
+                                                : _currentView == BookingView.cancelled
+                                                    ? 'No cancelled bookings found'
+                                                    : 'No unread cancelled bookings found',
                                     style: theme.textTheme.bodyLarge
                                         ?.copyWith(color: Colors.grey),
                                   ),
@@ -587,6 +592,18 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 child: _buildTabButton(
                   title: 'မဖတ်၍ပယ်ဖျက်',
                   view: BookingView.unreadcancelled,
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTabButton(
+                  title: 'ပယ်ဖျက်သည်',
+                  view: BookingView.cancelled,
                   theme: theme,
                 ),
               ),
@@ -795,18 +812,37 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                     'Created',
                     DateUtil.formatStringToLocalDateTime(booking.createdAt!),
                     theme),
+              
+              if (booking.status == BookingStatus.cancelled || booking.status == BookingStatus.unreadcancelled) ...[
+                if (booking.cancelledBy != null)
+                  _buildInfoRow('Cancelled By', booking.cancelledBy!, theme),
+                if (booking.cancelReason != null)
+                  _buildInfoRow('Cancel Reason', booking.cancelReason!, theme),
+              ],
+
               const SizedBox(height: 16),
 
-              // Show "Confirm" button only for pending bookings
+              // Show "Confirm" and "Cancel" buttons for pending bookings
               if (booking.status == BookingStatus.booking) ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    text: 'Confirm',
-                    color: Theme.of(context).primaryColor,
-                    onPressed: () =>
-                        _confirmBooking(context, booking.id!, booking.clinic!),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        text: 'Confirm',
+                        color: Theme.of(context).primaryColor,
+                        onPressed: () => _confirmBooking(
+                            context, booking.id!, booking.clinic!),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: CustomButton(
+                        text: 'Cancel',
+                        color: Colors.red,
+                        onPressed: () => _cancelBooking(context, booking),
+                      ),
+                    ),
+                  ],
                 ),
               ]
               // Show buttons for confirmed bookings
@@ -853,20 +889,42 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: () => _bookAgain(context, booking),
-                      icon: const Icon(Icons.refresh, size: 20),
-                      label: const Text('Book Again'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        shadowColor: Theme.of(context).primaryColor.withOpacity(0.4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _bookAgain(context, booking),
+                            icon: const Icon(Icons.refresh, size: 20),
+                            label: const Text('Book Again'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              elevation: 4,
+                              shadowColor: Theme.of(context).primaryColor.withOpacity(0.4),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _cancelBooking(context, booking),
+                            icon: const Icon(Icons.cancel_outlined, size: 20),
+                            label: const Text('Cancel'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1011,6 +1069,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
         return 'အတည်မပြုရသေး';
       case BookingStatus.unreadcancelled:
         return 'မဖတ်၍ပယ်ဖျက်';
+      case BookingStatus.cancelled:
+        return 'ပယ်ဖျက်သည်';
       default:
         return 'Unknown';
     }
@@ -1033,6 +1093,9 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
         break;
       case BookingStatus.unreadcancelled:
         color = Colors.red;
+        break;
+      case BookingStatus.cancelled:
+        color = Colors.redAccent;
         break;
       default:
         color = Colors.grey;
@@ -1088,6 +1151,173 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
             BlocProvider.value(value: BlocProvider.of<ClinicCubit>(context)),
           ],
           child: _BookAgainModal(booking: booking),
+        );
+      },
+    );
+  }
+
+  // Shows a dialog to enter a reason and cancel a single booking
+  void _cancelBooking(BuildContext context, ClinicBookingModel booking) {
+    if (booking.id == null) return;
+
+    final TextEditingController reasonController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 10,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.cancel_outlined, color: Colors.red, size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'Cancel Booking',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Please provide a reason for cancelling this booking. This will be sent to the patient.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: isDark ? Colors.white70 : Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: reasonController,
+                    maxLines: 3,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Cancellation Reason',
+                      hintText: 'e.g., Doctor is unavailable due to emergency',
+                      alignLabelWithHint: true,
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.only(bottom: 40),
+                        child: Icon(Icons.edit_note, size: 24),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Reason is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: Text(
+                            'Keep Booking',
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              context.read<BookingCubit>().cancelSingleBooking(
+                                    booking.id!,
+                                    reasonController.text.trim(),
+                                  );
+                              Navigator.of(dialogContext).pop();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please provide a reason for cancellation'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text(
+                            'Cancel Now',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );

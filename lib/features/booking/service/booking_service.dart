@@ -84,4 +84,12 @@ class BookingService {
     final response = await _dio.put('/bookings/$bookingId/read');
     return ClinicBookingModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<int> cancelSingleBooking(String bookingId, String cancelReason) async {
+    final response = await _dio.patch('/bookings/$bookingId/cancel', data: {
+      "cancelReason": cancelReason,
+      "cancelledBy": "clinic"
+    });
+    return response.statusCode!;
+  }
 }

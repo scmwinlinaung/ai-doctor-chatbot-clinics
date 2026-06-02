@@ -13,6 +13,8 @@ enum BookingStatus {
   unconfirmed,
   @JsonValue('unreadcancelled')
   unreadcancelled,
+  @JsonValue('cancelled')
+  cancelled,
   @JsonValue('unknown')
   unknown;
 
@@ -41,6 +43,8 @@ enum BookingStatus {
         return 'unconfirmed';
       case BookingStatus.unreadcancelled:
         return 'unreadcancelled';
+      case BookingStatus.cancelled:
+        return 'cancelled';
       case BookingStatus.unknown:
         return 'unknown';
     }
@@ -53,7 +57,7 @@ class ClinicBookingModel with _$ClinicBookingModel {
       {@JsonKey(name: '_id') String? id,
       String? clinic, // This is the clinic ID
       UserModel? user,
-      BookingStatus? status,
+      @JsonKey(fromJson: BookingStatus.fromJson) BookingStatus? status,
       bool? paid,
       String? confirmedDate,
       String? time,
@@ -62,7 +66,9 @@ class ClinicBookingModel with _$ClinicBookingModel {
       int? age,
       String? date,
       String? createdAt,
-      bool? isReadByClinic}) = _ClinicBookingModel;
+      bool? isReadByClinic,
+      String? cancelReason,
+      String? cancelledBy}) = _ClinicBookingModel;
 
   factory ClinicBookingModel.fromJson(Map<String, dynamic> json) =>
       _$ClinicBookingModelFromJson(json);

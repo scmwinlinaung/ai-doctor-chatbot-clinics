@@ -412,10 +412,16 @@ class _BookingReportScreenContentState extends State<_BookingReportScreenContent
       case 'confirmed':
         color = Colors.green;
         break;
-      case 'pending':
+      case 'booking':
         color = Colors.orange;
         break;
+      case 'unconfirmed':
+        color = Colors.orangeAccent;
+        break;
       case 'cancelled':
+        color = Colors.redAccent;
+        break;
+      case 'unreadcancelled':
         color = Colors.red;
         break;
       default:
