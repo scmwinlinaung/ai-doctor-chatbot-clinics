@@ -190,6 +190,42 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
+  Future<void> cancelSingleBooking(String bookingId, String cancelReason) async {
+    try {
+      emit(const BookingState.loading());
+      final status = await _bookingService.cancelSingleBooking(bookingId, cancelReason);
+      if (status == 200) {
+        emit(const BookingState.success("Booking cancelled successfully"));
+        await fetchClinicBooking();
+      } else if (status == 404) {
+        emit(const BookingState.error("Booking not found"));
+      } else {
+        emit(const BookingState.error("Failed to cancel booking"));
+      }
+    } on DioException catch (e) {
+      String errorMessage = 'Failed to cancel booking';
+
+      if (e.response != null) {
+        errorMessage = e.response?.data['message'] ?? 'Server error';
+        if (e.response?.statusCode == 404) {
+          errorMessage = 'Booking not found';
+        }
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage =
+            'Connection timeout. Please check your internet connection.';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = 'Request timeout. Please try again.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage =
+            'Connection error. Please check your internet connection.';
+      }
+
+      emit(BookingState.error(errorMessage));
+    } catch (e) {
+      emit(BookingState.error('Failed to cancel booking: ${e.toString()}'));
+    }
+  }
+
   void clearBookings() {
     emit(const BookingState.initial());
   }
