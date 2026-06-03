@@ -25,9 +25,23 @@ class AuthCubit extends Cubit<AuthState> {
 
     try {
       final token = await _tokenStorageService.getToken();
+      final clinicId = await _tokenStorageService.getClinicId();
 
       if (token != null && token.isNotEmpty) {
         emit(AuthState.authenticated(token));
+
+        // Update FCM token on server
+        if (clinicId != null) {
+          try {
+            final notificationService = NotificationService();
+            final fcmToken = await notificationService.getFcmToken();
+            if (fcmToken != null && fcmToken.isNotEmpty) {
+              await _notificationApiService.updateFcmToken(clinicId, fcmToken);
+            }
+          } catch (e) {
+            print('Error updating FCM token during checkAuthStatus: $e');
+          }
+        }
       } else {
         emit(const AuthState.unauthenticated(""));
       }

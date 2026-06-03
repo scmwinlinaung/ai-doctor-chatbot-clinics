@@ -5,6 +5,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `Firebase.initializeApp()` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  if (kDebugMode) {
+    print("Handling a background message: ${message.messageId}");
+  }
+}
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -50,7 +61,26 @@ class NotificationService {
       );
 
       await _localNotifications.initialize(initializationSettings);
+
+      // Create Android Notification Channel
+      if (Platform.isAndroid) {
+        const AndroidNotificationChannel channel = AndroidNotificationChannel(
+          'health_guide_notifications', // id
+          'Health Guide Notifications', // title
+          description: 'Notifications from Health Guide', // description
+          importance: Importance.max,
+        );
+
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(channel);
+      }
+
       debugPrint("Local notifications initialized successfully");
+
+      // Set background message handler
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // Request notification permission only if requested
       debugPrint("requestPermission: $requestPermission");
@@ -211,7 +241,7 @@ class NotificationService {
         notification.body,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'com.HealthGuideClinic',
+            'health_guide_notifications',
             'Health Guide Notifications',
             channelDescription: 'Notifications from Health Guide',
             importance: Importance.max,

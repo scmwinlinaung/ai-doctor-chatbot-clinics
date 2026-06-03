@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:clinics/core/config/app_config.dart';
 import 'package:clinics/features/auth/services/token_storage_service.dart';
 import 'package:dio/dio.dart';
@@ -7,24 +8,29 @@ import 'jwt_interceptor.dart';
 class DioClient {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl:
-          "https://${AppConfig.host}/api", // Using HTTPS with self-signed cert
-      connectTimeout: const Duration(seconds: 120),
-      receiveTimeout: const Duration(seconds: 120),
+      baseUrl: "https://${AppConfig.host}/api",
+      connectTimeout: const Duration(seconds: 30), // Reduced from 120 for faster failover
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Connection': 'close', // Disable persistent connections to avoid 103 error
       },
     ),
   );
 
   static Dio get instance {
-    // Disable SSL certificate verification for development with self-signed certs
-    (_dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
-        (client) {
-      client.badCertificateCallback = (cert, host, port) => true;
-      return client;
-    };
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        // Disable SSL verification for development
+        client.badCertificateCallback = (cert, host, port) => true;
+        // Increase reliability for mobile networks
+        client.connectionTimeout = const Duration(seconds: 30);
+        return client;
+      },
+    );
 
     if (_dio.interceptors.whereType<JwtInterceptor>().isEmpty) {
       _dio.interceptors.add(JwtInterceptor(TokenStorageService()));
