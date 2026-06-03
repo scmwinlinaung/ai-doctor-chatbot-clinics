@@ -36,12 +36,10 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSContactsUsageDescription</key>
-	<string>This app needs access to contacts to provide better communication experience.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to photo library to allow users to select images for their profile and medical documents.</string>
+	<!-- Camera Permission - Required for QR code scanning (redemption feature) -->
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to camera to scan QR codes for redeeming rewards.</string>
+	<string>This app requires camera access to scan QR codes for reward redemption. This feature allows you to quickly redeem rewards by scanning codes provided by the clinic.</string>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

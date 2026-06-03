@@ -51,17 +51,17 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i127.NotificationApiService>(
         () => _i127.NotificationApiService());
+    gh.factory<_i548.RegionCubit>(() => _i548.RegionCubit());
+    gh.factory<_i745.AdvertisementCubit>(() => _i745.AdvertisementCubit());
+    gh.factory<_i267.LanguageCubit>(() => _i267.LanguageCubit());
+    gh.factory<_i1045.CityCubit>(() => _i1045.CityCubit());
     gh.factory<_i142.UserCubit>(() => _i142.UserCubit());
     gh.factory<_i225.TokenStorageService>(() => _i225.TokenStorageService());
     gh.factory<_i11.BookingService>(() => _i11.BookingService());
     gh.factory<_i753.ClinicService>(() => _i753.ClinicService());
-    gh.factory<_i745.AdvertisementCubit>(() => _i745.AdvertisementCubit());
-    gh.factory<_i1045.CityCubit>(() => _i1045.CityCubit());
-    gh.factory<_i267.LanguageCubit>(() => _i267.LanguageCubit());
-    gh.factory<_i548.RegionCubit>(() => _i548.RegionCubit());
+    gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
     gh.factory<_i838.RedemptionService>(() => _i838.RedemptionService());
     gh.factory<_i266.ReportService>(() => _i266.ReportService());
-    gh.factory<_i532.ThemeCubit>(() => _i532.ThemeCubit());
     gh.factory<_i369.DoctorNotificationCubit>(() =>
         _i369.DoctorNotificationCubit(gh<_i127.NotificationApiService>()));
     gh.lazySingleton<_i898.ClinicNotificationCubit>(() =>
