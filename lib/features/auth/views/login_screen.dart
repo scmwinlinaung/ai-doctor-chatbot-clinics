@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 48),
                         CustomTextField(
-                          hintText: 'Phone Number or Username',
+                          hintText: 'Phone Number',
                           controller: usernameOrPhonenoCtrl,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
