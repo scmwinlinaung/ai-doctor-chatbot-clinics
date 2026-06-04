@@ -39,7 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
             print('✅ User authenticated, navigating to home');
             context.go('/');
           } else if (state is AuthUnauthenticated) {
-            print('❌ Authentication failed: ${state.error}'); // Debug log
+            if (state.error.isNotEmpty) {
+              print('❌ Authentication failed: ${state.error}'); // Debug log
+            }
             // Only show snackbar if there's a non-empty error message
             if (state.error.isNotEmpty) {
               WidgetsBinding.instance.addPostFrameCallback((_) {

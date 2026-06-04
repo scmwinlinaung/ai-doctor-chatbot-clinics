@@ -22,7 +22,7 @@ mixin _$AuthState {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) =>
       throw _privateConstructorUsedError;
@@ -32,7 +32,7 @@ mixin _$AuthState {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) =>
       throw _privateConstructorUsedError;
@@ -42,7 +42,7 @@ mixin _$AuthState {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) =>
@@ -53,7 +53,7 @@ mixin _$AuthState {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) =>
       throw _privateConstructorUsedError;
@@ -63,7 +63,7 @@ mixin _$AuthState {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) =>
       throw _privateConstructorUsedError;
@@ -73,7 +73,7 @@ mixin _$AuthState {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) =>
@@ -145,7 +145,7 @@ class _$AuthInitialImpl implements AuthInitial {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) {
     return initial();
@@ -158,7 +158,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) {
     return initial?.call();
@@ -171,7 +171,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) {
@@ -188,7 +188,7 @@ class _$AuthInitialImpl implements AuthInitial {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) {
     return initial(this);
@@ -201,7 +201,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) {
     return initial?.call(this);
@@ -214,7 +214,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) {
@@ -274,7 +274,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) {
     return loading();
@@ -287,7 +287,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) {
     return loading?.call();
@@ -300,7 +300,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) {
@@ -317,7 +317,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) {
     return loading(this);
@@ -330,7 +330,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) {
     return loading?.call(this);
@@ -343,7 +343,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) {
@@ -431,7 +431,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) {
     return authenticated(token);
@@ -444,7 +444,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) {
     return authenticated?.call(token);
@@ -457,7 +457,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) {
@@ -474,7 +474,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) {
     return authenticated(this);
@@ -487,7 +487,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) {
     return authenticated?.call(this);
@@ -500,7 +500,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) {
@@ -596,7 +596,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) {
     return unauthenticated(error);
@@ -609,7 +609,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) {
     return unauthenticated?.call(error);
@@ -622,7 +622,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) {
@@ -639,7 +639,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) {
     return unauthenticated(this);
@@ -652,7 +652,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) {
     return unauthenticated?.call(this);
@@ -665,7 +665,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) {
@@ -732,7 +732,7 @@ class _$SuccessImpl implements Success {
 
   @override
   String toString() {
-    return 'AuthState.succss(message: $message)';
+    return 'AuthState.success(message: $message)';
   }
 
   @override
@@ -761,10 +761,10 @@ class _$SuccessImpl implements Success {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) {
-    return succss(message);
+    return success(message);
   }
 
   @override
@@ -774,10 +774,10 @@ class _$SuccessImpl implements Success {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) {
-    return succss?.call(message);
+    return success?.call(message);
   }
 
   @override
@@ -787,12 +787,12 @@ class _$SuccessImpl implements Success {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) {
-    if (succss != null) {
-      return succss(message);
+    if (success != null) {
+      return success(message);
     }
     return orElse();
   }
@@ -804,10 +804,10 @@ class _$SuccessImpl implements Success {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) {
-    return succss(this);
+    return success(this);
   }
 
   @override
@@ -817,10 +817,10 @@ class _$SuccessImpl implements Success {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) {
-    return succss?.call(this);
+    return success?.call(this);
   }
 
   @override
@@ -830,12 +830,12 @@ class _$SuccessImpl implements Success {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) {
-    if (succss != null) {
-      return succss(this);
+    if (success != null) {
+      return success(this);
     }
     return orElse();
   }
@@ -925,7 +925,7 @@ class _$FailureImpl implements Failure {
     required TResult Function() loading,
     required TResult Function(String token) authenticated,
     required TResult Function(String error) unauthenticated,
-    required TResult Function(String message) succss,
+    required TResult Function(String message) success,
     required TResult Function(String error) failure,
   }) {
     return failure(error);
@@ -938,7 +938,7 @@ class _$FailureImpl implements Failure {
     TResult? Function()? loading,
     TResult? Function(String token)? authenticated,
     TResult? Function(String error)? unauthenticated,
-    TResult? Function(String message)? succss,
+    TResult? Function(String message)? success,
     TResult? Function(String error)? failure,
   }) {
     return failure?.call(error);
@@ -951,7 +951,7 @@ class _$FailureImpl implements Failure {
     TResult Function()? loading,
     TResult Function(String token)? authenticated,
     TResult Function(String error)? unauthenticated,
-    TResult Function(String message)? succss,
+    TResult Function(String message)? success,
     TResult Function(String error)? failure,
     required TResult orElse(),
   }) {
@@ -968,7 +968,7 @@ class _$FailureImpl implements Failure {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
-    required TResult Function(Success value) succss,
+    required TResult Function(Success value) success,
     required TResult Function(Failure value) failure,
   }) {
     return failure(this);
@@ -981,7 +981,7 @@ class _$FailureImpl implements Failure {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
-    TResult? Function(Success value)? succss,
+    TResult? Function(Success value)? success,
     TResult? Function(Failure value)? failure,
   }) {
     return failure?.call(this);
@@ -994,7 +994,7 @@ class _$FailureImpl implements Failure {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
-    TResult Function(Success value)? succss,
+    TResult Function(Success value)? success,
     TResult Function(Failure value)? failure,
     required TResult orElse(),
   }) {

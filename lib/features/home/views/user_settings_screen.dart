@@ -1,3 +1,4 @@
+import 'package:clinics/core/navigation/app_routes.dart';
 import 'package:clinics/features/booking/cubit/clinic_cubit.dart';
 import 'package:clinics/features/home/cubit/language_cubit.dart';
 import 'package:flutter/material.dart';
@@ -158,6 +159,21 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                     _buildInfoRow(
                       'Member Since',
                       _formatDate(DateTime.parse(clinic.createdAt ?? "")),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push(AppRoutes.forgetPassword),
+                        icon: const Icon(Icons.lock_outline),
+                        label: const Text('Change Password'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 );

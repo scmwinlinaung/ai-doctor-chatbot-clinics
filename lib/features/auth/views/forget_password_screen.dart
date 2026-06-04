@@ -17,12 +17,12 @@ class ForgetPasswordScreen extends StatefulWidget {
 
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final phonenoCtrl = TextEditingController();
+  final oldPasswordCtrl = TextEditingController();
   final newPasswordCtrl = TextEditingController();
 
   @override
   void dispose() {
-    phonenoCtrl.dispose();
+    oldPasswordCtrl.dispose();
     newPasswordCtrl.dispose();
     super.dispose();
   }
@@ -41,7 +41,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                 elevation: 0,
                 leading: CustomBackButton(
                   iconColor: Theme.of(context).primaryColor,
-                  callback: () => context.go(AppRoutes.login),
+                  callback: () => context.pop(),
                 ),
               ),
               Expanded(
@@ -103,7 +103,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 const Text(
-                                  'Forgot Password',
+                                  'Change Password',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 32,
@@ -113,7 +113,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
-                                  'Enter your details to reset your password.',
+                                  'Enter your old and new password to change.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 16,
@@ -122,18 +122,12 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                 ),
                                 const SizedBox(height: 48),
                                 CustomTextField(
-                                  hintText: 'Phone Number (09xxxxxxxx)',
-                                  controller: phonenoCtrl,
-                                  keyboardType: TextInputType.phone,
+                                  hintText: 'Old Password',
+                                  obscureText: true,
+                                  controller: oldPasswordCtrl,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Phone number is required.';
-                                    }
-                                    final RegExp myanmarPhoneRegex = RegExp(
-                                      r'^09\d{7,9}$',
-                                    );
-                                    if (!myanmarPhoneRegex.hasMatch(value)) {
-                                      return 'Please enter a valid Myanmar phone number.';
+                                      return 'Old password is required.';
                                     }
                                     return null;
                                   },
@@ -162,17 +156,14 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                       if (_formKey.currentState!.validate()) {
                                         context
                                             .read<AuthCubit>()
-                                            .changePassword(
-                                              phonenoCtrl.text,
+                                            .changeClinicPassword(
+                                              oldPasswordCtrl.text,
                                               newPasswordCtrl.text,
                                             );
-                                        if (state is Success) {
-                                          context.push(AppRoutes.login);
-                                        }
                                       }
                                     },
                                     child: Text(
-                                      'Submit',
+                                      'Change Password',
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodyLarge,

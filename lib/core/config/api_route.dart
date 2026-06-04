@@ -1,6 +1,7 @@
 class ApiRoute {
   static const String register = "/auth/register";
   static const String updatePassword = "/users/update-password";
+  static const String changeClinicPassword = "/auth/clinic/change-password";
   static const String login = "/auth/clinic/login";
   static const String categories = "/categories";
   static const String questions = "/questions";

@@ -166,10 +166,38 @@ class AuthCubit extends Cubit<AuthState> {
         data: {'password': newPassword.trim()},
       );
       if (response.statusCode == 200) {
-        emit(const AuthState.succss('Update Password Successfully'));
+        emit(const AuthState.success('Update Password Successfully'));
       } else {
         emit(AuthState.failure(response.statusMessage.toString()));
       }
+    } catch (e) {
+      emit(AuthState.failure(e.toString()));
+    }
+  }
+
+  Future<void> changeClinicPassword(
+      String oldPassword, String newPassword) async {
+    emit(const AuthState.loading());
+    try {
+      final hashOldPassword =
+          Cryptography().hashStringWithSha512(oldPassword.trim());
+      final hashNewPassword =
+          Cryptography().hashStringWithSha512(newPassword.trim());
+
+      final Response response =
+          await DioClient.instance.post(ApiRoute.changeClinicPassword, data: {
+        'oldPassword': hashOldPassword,
+        'newPassword': hashNewPassword,
+      });
+      if (response.statusCode == 200) {
+        emit(const AuthState.success('Password changed successfully'));
+      } else {
+        emit(AuthState.failure(
+            response.data['msg'] ?? 'Failed to change password'));
+      }
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data['msg'] ?? e.message;
+      emit(AuthState.failure(errorMessage));
     } catch (e) {
       emit(AuthState.failure(e.toString()));
     }
