@@ -1,5 +1,8 @@
 import 'package:clinics/core/constant/auth_constant.dart';
+import 'package:clinics/core/navigation/app_routes.dart';
+import 'package:clinics/core/widgets/custom_button.dart';
 import 'package:clinics/core/widgets/custom_text_field.dart';
+import 'package:clinics/core/widgets/glassmorphism.dart';
 import 'package:clinics/core/widgets/gradient_background.dart';
 import 'package:clinics/features/auth/cubit/auth_cubit.dart';
 import 'package:flutter/material.dart';
@@ -33,181 +36,213 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
-          print(
-              'AuthState changed: $state at ${DateTime.now()}'); // Debug log with timestamp
           if (state is AuthAuthenticated) {
-            print('✅ User authenticated, navigating to home');
             context.go('/');
           } else if (state is AuthUnauthenticated) {
             if (state.error.isNotEmpty) {
-              print('❌ Authentication failed: ${state.error}'); // Debug log
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.error),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
             }
-            // Only show snackbar if there's a non-empty error message
-            if (state.error.isNotEmpty) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.error),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 4),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              });
-            }
-          } else if (state is AuthLoading) {
-            print('⏳ Authentication loading...');
           }
         },
         child: GradientBackground(
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Theme(
-                  data: theme.copyWith(
-                    textSelectionTheme: TextSelectionThemeData(
-                      cursorColor: theme.primaryColor,
-                    ),
-                    inputDecorationTheme: theme.inputDecorationTheme.copyWith(
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.2),
-                      hintStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: const BorderSide(
-                          color: Colors.white38,
-                          width: 1.0,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(
-                          color: theme.primaryColor,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          'Welcome Back!',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Login to your health guide clinics account.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        const SizedBox(height: 48),
-                        CustomTextField(
-                          hintText: 'Phone Number',
-                          controller: usernameOrPhonenoCtrl,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'This field is required.';
-                            }
-                            if (value.startsWith('0')) {
-                              final RegExp myanmarPhoneRegex =
-                                  RegExp(r'^09\d{7,9}$');
-                              if (!myanmarPhoneRegex.hasMatch(value)) {
-                                return 'Please enter a valid Myanmar phone number.';
-                              }
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        CustomTextField(
-                          hintText: 'Password',
-                          obscureText: true,
-                          controller: passwordCtrl,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Password is required.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _isDisclaimerChecked,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  _isDisclaimerChecked = value!;
-                                });
-                              },
-                              checkColor: Colors.white,
-                              activeColor: theme.primaryColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 40.0,
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Responsiveness: Limit card width on larger screens
+                    final maxWidth =
+                        constraints.maxWidth > 600 ? 500.0 : constraints.maxWidth;
+
+                    return SizedBox(
+                      width: maxWidth,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Logo Section
+                          Hero(
+                            tag: 'app_logo',
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              height: 120,
+                              fit: BoxFit.contain,
                             ),
-                            Expanded(
-                              child: Text(AuthConstant.termsAndCondition,
-                                  style: Theme.of(context).textTheme.bodySmall),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.08),
-                        BlocBuilder<AuthCubit, AuthState>(
-                          builder: (context, state) {
-                            return ElevatedButton(
-                              onPressed: state is AuthLoading ||
-                                      !_isDisclaimerChecked
-                                  ? null
-                                  : () {
-                                      if (_formKey.currentState!.validate()) {
-                                        // Disable button immediately to prevent multiple clicks
-                                        FocusScope.of(context).unfocus();
-                                        context.read<AuthCubit>().login(
-                                            usernameOrPhonenoCtrl.text,
-                                            passwordCtrl.text);
-                                      }
-                                    },
-                              child: state is AuthLoading
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary,
-                                        ),
+                          ),
+                          const SizedBox(height: 40),
+
+                          // Login Card with Glassmorphism
+                          Glassmorphism(
+                            blur: 15,
+                            opacity: 0.15,
+                            borderRadius: BorderRadius.circular(30),
+                            child: Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'Welcome Back',
+                                      style: theme.textTheme.headlineMedium
+                                          ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    )
-                                  : Text(
-                                      'Login',
-                                      style: TextStyle(
-                                          color: theme.colorScheme.onPrimary),
+                                      textAlign: TextAlign.center,
                                     ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Sign in to continue your clinic management',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: Colors.white70,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 40),
+
+                                    // Username/Phone Input
+                                    CustomTextField(
+                                      hintText: 'Phone Number',
+                                      controller: usernameOrPhonenoCtrl,
+                                      prefixIcon: Icon(
+                                        Icons.person_outline,
+                                        color: theme.primaryColor,
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'This field is required.';
+                                        }
+                                        if (value.startsWith('0')) {
+                                          final RegExp myanmarPhoneRegex =
+                                              RegExp(r'^09\d{7,9}$');
+                                          if (!myanmarPhoneRegex.hasMatch(value)) {
+                                            return 'Please enter a valid Myanmar phone number.';
+                                          }
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Password Input
+                                    CustomTextField(
+                                      hintText: 'Password',
+                                      obscureText: true,
+                                      controller: passwordCtrl,
+                                      prefixIcon: Icon(
+                                        Icons.lock_outline,
+                                        color: theme.primaryColor,
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Password is required.';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Disclaimer Section
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: Checkbox(
+                                            value: _isDisclaimerChecked,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                _isDisclaimerChecked = value!;
+                                              });
+                                            },
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            activeColor: theme.primaryColor,
+                                            side: const BorderSide(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _isDisclaimerChecked =
+                                                    !_isDisclaimerChecked;
+                                              });
+                                            },
+                                            child: Text(
+                                              AuthConstant.termsAndCondition,
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                color: theme.primaryColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 40),
+
+                                    // Login Button
+                                    BlocBuilder<AuthCubit, AuthState>(
+                                      builder: (context, state) {
+                                        return CustomButton(
+                                          text: 'LOGIN',
+                                          isLoading: state is AuthLoading,
+                                          onPressed: !_isDisclaimerChecked
+                                              ? () {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        'Please accept the terms and conditions.',
+                                                      ),
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                    ),
+                                                  );
+                                                }
+                                              : () {
+                                                  if (_formKey.currentState!
+                                                      .validate()) {
+                                                    FocusScope.of(context)
+                                                        .unfocus();
+                                                    context.read<AuthCubit>().login(
+                                                          usernameOrPhonenoCtrl
+                                                              .text,
+                                                          passwordCtrl.text,
+                                                        );
+                                                  }
+                                                },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
