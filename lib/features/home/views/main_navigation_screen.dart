@@ -795,6 +795,10 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                 _buildInfoRow('Patient Name', booking.patientName!, theme),
               if (booking.age != null)
                 _buildInfoRow('Age', booking.age.toString(), theme),
+              if (booking.city != null && booking.city!.isNotEmpty)
+                _buildInfoRow('City', booking.city!, theme),
+              if (booking.region != null && booking.region!.isNotEmpty)
+                _buildInfoRow('Region', booking.region!, theme),
               // Conditionally show doctor and date for confirmed bookings
               if (booking.doctorName != null)
                 _buildInfoRow(
@@ -1958,15 +1962,25 @@ class _BookAgainModalState extends State<_BookAgainModal> {
                           style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
                         ),
                         if (widget.booking.patientName != null)
-                          Text(
-                            'Patient Name: ${widget.booking.patientName}',
-                            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
-                          ),
+                         Text(
+                           'Patient Name: ${widget.booking.patientName}',
+                           style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                         ),
                         if (widget.booking.age != null)
-                          Text(
-                            'Age: ${widget.booking.age}',
-                            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
-                          ),
+                         Text(
+                           'Age: ${widget.booking.age}',
+                           style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                         ),
+                        if (widget.booking.city != null && widget.booking.city!.isNotEmpty)
+                         Text(
+                           'City: ${widget.booking.city}',
+                           style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                         ),
+                        if (widget.booking.region != null && widget.booking.region!.isNotEmpty)
+                         Text(
+                           'Region: ${widget.booking.region}',
+                           style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                         ),
                       ],
                     ),
                   ),

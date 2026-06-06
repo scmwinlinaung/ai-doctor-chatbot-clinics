@@ -64,6 +64,8 @@ class ClinicBookingModel with _$ClinicBookingModel {
       String? doctorName,
       String? patientName,
       int? age,
+      String? city,
+      String? region,
       String? date,
       String? createdAt,
       bool? isReadByClinic,

@@ -69,13 +69,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Logo Section
-                          Hero(
-                            tag: 'app_logo',
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              height: 120,
-                              fit: BoxFit.contain,
+                          // Logo Section - Circular Modern Design
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 25,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                              border: Border.all(
+                                color: theme.primaryColor.withOpacity(0.1),
+                                width: 8,
+                              ),
+                            ),
+                            child: Hero(
+                              tag: 'app_logo',
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                height: 80,
+                                width: 80,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 40),
