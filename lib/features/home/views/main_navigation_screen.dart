@@ -395,6 +395,8 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
               children: [
                 // The "Booking" and "Confirm" toggle buttons
                 _buildToggleButtons(theme),
+
+                _buildWarningBanner(theme),
                 
                 if (_currentView == BookingView.confirmed)
                   _buildConfirmedSubTabs(theme),
@@ -549,6 +551,43 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWarningBanner(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.amber.withOpacity(0.1) : Colors.amber.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.amber.withOpacity(0.3) : Colors.amber.shade200,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: isDark ? Colors.amberAccent : Colors.amber.shade800,
+            size: 24,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '(၁) နာရီ အတွင်း ရက်ချိန်းယူမှုကို တုန့်ပြန်မှုမရှိပါက ရက်ချိန်းယူခြင်း အလိုလျှောက်ပျက်ပျယ်ပါမည်',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark ? Colors.amber.shade100 : Colors.amber.shade900,
+                fontWeight: FontWeight.w500,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
