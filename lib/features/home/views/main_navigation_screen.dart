@@ -296,7 +296,7 @@ class _BookingListingScreenState extends State<BookingListingScreen> {
                       Scaffold.of(context).openDrawer();
                     },
                     icon: const CircleAvatar(
-                      backgroundImage: AssetImage('assets/images/logo.png'),
+                      backgroundImage: AssetImage('assets/images/logo1.png'),
                     ),
                   );
                 },
