@@ -38,7 +38,17 @@
 	</dict>
 	<!-- Camera Permission - Required for QR code scanning (redemption feature) -->
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to scan QR codes for reward redemption. This feature allows you to quickly redeem rewards by scanning codes provided by the clinic.</string>
+	<string>This app requires camera access to scan QR codes for reward redemption and for medical consultations.</string>
+
+	<!-- Photo Library Permission - Required for uploading reports and profile pictures -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires access to your photo library to allow you to upload and share medical reports or profile pictures.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app requires permission to save photos and medical reports to your library.</string>
+
+	<!-- Microphone Permission - Required for consultations -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires access to your microphone for medical consultations and voice messages.</string>
 
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
